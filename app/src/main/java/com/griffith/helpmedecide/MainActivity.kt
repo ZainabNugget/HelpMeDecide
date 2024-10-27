@@ -7,8 +7,10 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,10 +37,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.activity.result.ActivityResultLauncher
+
 
 //Variables
 var xSpeed = mutableStateOf(0f)
@@ -47,12 +52,27 @@ var zSpeed = mutableStateOf(0f)
 var card_width = 450.dp;
 var card_height = 150.dp;
 
-
+var i = 0
+private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
 //Main Class
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+//            try {
+//                requestPermissionLauncher = registerForActivityResult(
+//                    ActivityResultContracts.RequestPermission()
+//                ) { isGranted: Boolean ->
+//                    if (isGranted) {
+//                        print("granted")
+//                    } else {
+//                        print("not granted ippe")
+//                    }
+//                }
+//            } catch (e: IllegalStateException) {
+//                TODO("Not yet implemented")
+//            }
+            i = ContextCompat.checkSelfPermission(LocalContext.current, android.Manifest.permission.ACCESS_COARSE_LOCATION)
             // TODO(Go to a different activity!)
             val intent = Intent(this, SpinTheWheel::class.java)
             // to go to activity startActivity(intent)
@@ -110,6 +130,7 @@ fun InfoCards(text : String, color: Color, width : Dp, height : Dp){
             .size(width = width, height = height)
             .padding(16.dp)
     ) {
+
         Text(
             text = text,
             modifier = Modifier
@@ -147,6 +168,7 @@ fun SettingsScreen(navController: NavController) {
             modifier = Modifier.padding(innerPadding).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(30.dp)
         ) {
+            Text(text = "$i")
             InfoCards("Change The Theme!",
                 Color.White, card_width, card_height)
         }

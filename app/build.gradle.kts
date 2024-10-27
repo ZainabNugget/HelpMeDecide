@@ -40,6 +40,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.fragment.ktx)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.core.ktx)
