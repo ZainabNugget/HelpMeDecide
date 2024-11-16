@@ -39,7 +39,7 @@ fun SpinWheelDraw() {
     var isSpinning by remember { mutableStateOf(false) }
     var currentRotation by remember { mutableStateOf(0f) }
     var targetRotation by remember { mutableStateOf(0f) }
-
+    val segments = listOf("A", "B", "C", "D", "E", "F","G","H") //list of items
     // Smoothly animate to the target rotation
     val animatedRotation by animateFloatAsState(
         targetValue = targetRotation,
@@ -61,7 +61,7 @@ fun SpinWheelDraw() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        DrawTheWheel(rotationAngle = animatedRotation)
+        DrawTheWheel(rotationAngle = animatedRotation, segments = segments)
 
         Spacer(modifier = Modifier.height(16.dp))
         Button(
@@ -80,8 +80,8 @@ fun SpinWheelDraw() {
 }
 
 @Composable
-fun DrawTheWheel(rotationAngle: Float) {
-    val segments = listOf("A", "B", "C", "D", "E", "F","G","H") //list of items
+fun DrawTheWheel(rotationAngle: Float, segments : List<String>) {
+//    val segments = listOf("A", "B", "C", "D", "E", "F","G","H") //list of items
     val colors = listOf(Color.DarkGray, Color.LightGray)
     Box{
         Canvas(modifier = Modifier.size(300.dp)) {

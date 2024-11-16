@@ -15,6 +15,9 @@
         android:theme="@style/Theme.HelpMeDecide"
         tools:targetApi="31">
         <activity
+            android:name=".GenerateList"
+            android:exported="false" />
+        <activity
             android:name=".RollTheDice"
             android:exported="false" />
         <activity
