@@ -1,7 +1,7 @@
 package com.griffith.helpmedecide
 
+import android.content.Intent
 import android.os.Bundle
-import android.widget.Space
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -34,48 +34,38 @@ class GenerateList : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-
+            //Will switch the intent to the spin the wheel activity
+            CreateList { list ->
+                val intent = Intent(this, SpinTheWheel::class.java)
+                intent.putStringArrayListExtra("ITEMS_LIST", ArrayList(list))
+                intent.putExtra("IS_USER_GENERATED", true)
+                startActivity(intent)
+            }
         }
     }
 }
 
-@Composable
-fun NumberOfItems() {
-    var numberOfItems by remember { mutableStateOf("") } // Use String for TextField
-    var itemsCount by remember { mutableStateOf(0) } // Store the actual Int value
-
-    Column {
-        TextField(
-            value = numberOfItems,
-            onValueChange = { input ->
-                numberOfItems = input // Update the text in the TextField
-                itemsCount = input.toIntOrNull() ?: 0 // Convert to Int, default to 0 for invalid input
-            },
-            label = { Text("Enter Number of Items") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Text(text = "You entered: $itemsCount items", modifier = Modifier.padding(top = 8.dp))
-    }
-}
-
-@Composable
+@Composable //Creating list composable, will include trextfeilds
 fun CreateList(onListComplete: (List<String>) -> Unit) {
+    //number of items within a list
     var numberOfItems by remember { mutableStateOf("") }
-    var itemsCount by remember { mutableStateOf(0) }
-    val items = remember { mutableStateListOf<String>() }
-    var newItem by remember { mutableStateOf("") }
+    var itemsCount by remember { mutableIntStateOf(0) } //how many items
+    val items = remember { mutableStateListOf<String>() } //items themselves
+    var newItem by remember { mutableStateOf("") } //get the item from the textfeild
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center //vertically aligned
     ) {
+        //Title of the list activity
         Text(
             text = "Generate a list below!",
             modifier = Modifier.padding(vertical = 8.dp).align(Alignment.CenterHorizontally),
             style = MaterialTheme.typography.titleLarge
         )
+        //Adding the items list size
         TextField(
             value = numberOfItems,
             onValueChange = { input ->
@@ -85,12 +75,13 @@ fun CreateList(onListComplete: (List<String>) -> Unit) {
             label = { Text("Enter Number of Items") },
             modifier = Modifier.fillMaxWidth()
         )
-
+        //Keeping track of what items are left to add
         Text(
-            text = "Number of items to create: $itemsCount",
+            text = "Number of items left to create: $itemsCount",
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
+        //if we havent reached the limit we keep adding
         if (items.size < itemsCount) {
             TextField(
                 value = newItem,
@@ -116,17 +107,18 @@ fun CreateList(onListComplete: (List<String>) -> Unit) {
                 text = "Items added: ${items.size} / $itemsCount",
                 modifier = Modifier.padding(vertical = 8.dp)
             )
-        }
-
-        if (items.size == itemsCount && itemsCount > 0) {
+        } else if (items.size == itemsCount && itemsCount > 0) {
+            //if the limit was reached we can stop the adding and complete the list
             Button(
                 onClick = { onListComplete(items.toList()) },
                 modifier = Modifier.fillMaxWidth()
             ) {
+                // TODO(Implement a way to take this into the spin the wheel acitivyt)
                 Text("Complete List")
             }
         }
 
+        //Show the user what kind of list they created
         Spacer(modifier = Modifier.height(16.dp))
         Text("Current List:", style = MaterialTheme.typography.bodyLarge)
 
@@ -142,8 +134,9 @@ fun CreateList(onListComplete: (List<String>) -> Unit) {
                     modifier = Modifier.weight(1f)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
+                //Giver the user the option to remove an item from the list
                 Button(
-                    onClick = { items.removeAt(index) },
+                    onClick = { items.removeAt(index) },//removes from the list
                     modifier = Modifier
                         .padding(start = 8.dp)
                         .size(40.dp)

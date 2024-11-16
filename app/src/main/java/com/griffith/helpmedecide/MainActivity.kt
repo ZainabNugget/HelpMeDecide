@@ -35,6 +35,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -53,14 +54,13 @@ import androidx.navigation.compose.rememberNavController
 
 
 //Variables
-var xSpeed = mutableStateOf(0f)
-var ySpeed = mutableStateOf(0f)
-var zSpeed = mutableStateOf(0f)
+var xSpeed = mutableFloatStateOf(0f)
+var ySpeed = mutableFloatStateOf(0f)
+var zSpeed = mutableFloatStateOf(0f)
 var card_width = 450.dp
 var card_height = 150.dp
 var font_size = 15.sp
 
-var i = 0
 private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
 //Main Class
 class MainActivity : ComponentActivity() {
@@ -116,9 +116,9 @@ class MainActivity : ComponentActivity() {
     private val sensorEventListener : SensorEventListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent?) {
             if(event?.sensor?.type == Sensor.TYPE_ACCELEROMETER){
-                xSpeed.value = event.values[0]
-                ySpeed.value = event.values[1]
-                zSpeed.value = event.values[2]
+                xSpeed.floatValue = event.values[0]
+                ySpeed.floatValue = event.values[1]
+                zSpeed.floatValue = event.values[2]
             }
         }
 
@@ -263,7 +263,7 @@ fun HomeScreen(navController: NavController) {
                 modifier = Modifier
                     .clickable(
                         onClick = {
-                            val intent = Intent(context, SpinTheWheel::class.java)
+                            val intent = Intent(context, GenerateList::class.java)
                             context.startActivity(intent)
                         },
                         indication = rememberRipple(bounded = true, color = Color.Gray),
@@ -271,7 +271,7 @@ fun HomeScreen(navController: NavController) {
                     )
 
             ){
-                InfoCards("Where should I go?!", Color.White, card_width, card_height)
+                InfoCards("Generate My Own", Color.White, card_width, card_height)
             }
         }
     }
