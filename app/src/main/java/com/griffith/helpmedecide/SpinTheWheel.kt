@@ -16,6 +16,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.tooling.preview.Preview
 //import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlin.math.cos
@@ -50,8 +51,10 @@ fun SpinWheelDraw(segments : List<String>) {
     var isSpinning by remember { mutableStateOf(false) }
     var currentRotation by remember { mutableFloatStateOf(0f) }
     var targetRotation by remember { mutableFloatStateOf(0f) }
+    var selectedItem by remember { mutableStateOf("") }
+    var showDialog by remember { mutableStateOf(false) }
+
 //    val segments = listOf("A", "B", "C", "D", "E", "F","G","H") //list of items
-    // Smoothly animate to the target rotation
     val animatedRotation by animateFloatAsState(
         targetValue = targetRotation,
         animationSpec = tween(
@@ -60,7 +63,10 @@ fun SpinWheelDraw(segments : List<String>) {
         ),
         finishedListener = {
             isSpinning = false
-            currentRotation = targetRotation % 360
+//            currentRotation = targetRotation % 360
+            val selectedIndex = (targetRotation % segments.size).toInt()
+            selectedItem = segments[selectedIndex]
+            showDialog = true
         }
     )
 
@@ -78,6 +84,7 @@ fun SpinWheelDraw(segments : List<String>) {
         Button(
             onClick = {
                 if (!isSpinning) {
+                    currentRotation = 0f
                     val randomEndAngle = Random.nextInt(0, 360)
                     val fullRotations = 5 * 360
                     targetRotation = currentRotation + fullRotations + randomEndAngle
@@ -86,6 +93,12 @@ fun SpinWheelDraw(segments : List<String>) {
             }
         ) {
             Text(text = "Spin the Wheel")
+        }
+    }
+
+    if (showDialog) {
+        ShowPopupDialog(selectedItem) {
+            showDialog = false
         }
     }
 }
@@ -147,6 +160,31 @@ fun DrawTheWheel(rotationAngle: Float, segments : List<String>) {
     }
 
 }
+@Composable
+fun ShowPopupDialog(item: String, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(item) },
+        text = { Text("The wheel stopped on: $item") },
+        confirmButton = {
+            Row{
+                Button(onClick = onDismiss) {
+                    Text("Try Again")
+                }
+                Button(onClick = onDismiss) {
+                    Text("Remove")
+                }
+            }
+        }
+    )
+}
+
+@Preview
+@Composable
+fun PreviewPopupDialog(){
+    ShowPopupDialog(item = "HI") { }
+}
+
 //To debug and stuff
 //@Preview(showBackground = true)
 //@Composable
