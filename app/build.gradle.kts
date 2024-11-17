@@ -40,6 +40,9 @@ android {
 }
 
 dependencies {
+    //Add location services dependency!
+    implementation(libs.androidx.activity.ktx.v161)
+    implementation(libs.play.services.location)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.kotlinx.serialization.json)
