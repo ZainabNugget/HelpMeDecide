@@ -7,6 +7,7 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.widget.Button
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
@@ -27,6 +28,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -96,6 +98,17 @@ class MainActivity : ComponentActivity() {
             // TODO(Implement the GPS location service here)
             //
             NavigationScreen() //not sure if this is an ok implementation honestly
+            val context = LocalContext.current
+            val intent = Intent(this, GPS::class.java)
+//            Column {
+//                Button(onClick = {
+//
+//
+//                    context.startActivity(intent)
+//                }) {
+//                    Text("Open GPS")
+//                }
+//            }
 
         }
     }
@@ -218,6 +231,7 @@ fun HomeScreen(navController: NavController) {
         ) {
             val context = LocalContext.current
             InfoCards("Welcome", Color.White, card_width, card_height + 20.dp)
+
             //Introcuction text
             Row(
                 modifier = Modifier.fillMaxWidth(),
