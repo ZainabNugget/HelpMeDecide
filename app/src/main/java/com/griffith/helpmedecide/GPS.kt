@@ -16,10 +16,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
 
+//Doesnt work yet :(
+//Crashes everytime i try to get the permission
 class GPS : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,7 +42,7 @@ class GPS : ComponentActivity() {
             }
         }
 
-        // Check permission
+        //Check is we have the permission
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             getCurrentLocation()
         } else {
@@ -51,6 +52,7 @@ class GPS : ComponentActivity() {
 
     @SuppressLint("MissingPermission")
     private fun getCurrentLocation() {
+        //:(
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
             if (location != null) {
