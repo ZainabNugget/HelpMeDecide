@@ -187,7 +187,7 @@ fun HomeScreen(navController: NavController, onCheckLocationPermission: () -> Un
             Box(
                 modifier = Modifier.clickable(
                     onClick = {
-                        val intent = Intent(context, RollTheDice::class.java)
+                        val intent = Intent(context, LocationService::class.java)
                         context.startActivity(intent)
                     },
                     indication = rememberRipple(bounded = true, color = Color.Gray),

@@ -10,10 +10,10 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
+        android:background="@color/white"
+        android:elevation="4dp"
         android:gravity="center_horizontal"
-        android:background="@color/off_white"
-        android:elevation="4dp">
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -36,39 +36,87 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="559dp"
-            android:background="@color/off_white"
+            android:layout_height="571dp"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="20dp"
             android:requiresFadingEdge="horizontal">
 
-            <TextView
-                android:id="@+id/textView"
-                style="@style/TextViewStyle"
-                android:text="@string/restaurants_text" />
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                app:cardBackgroundColor="@android:color/white"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="6dp">
 
-            <Button
-                android:id="@+id/button7"
-                style="@style/ButtonStyle"
-                android:text="@string/restaurants_button" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-            <Space
-                android:layout_width="20dp"
-                android:layout_height="20dp" />
+                    <TextView
+                        android:id="@+id/textView"
+                        style="@style/TextViewStyle"
+                        android:layout_marginBottom="10dp"
+                        android:text="@string/restaurants_text"
+                        android:textColor="@color/black"
+                        android:textSize="16sp" />
 
-            <TextView
-                android:id="@+id/textView2"
-                style="@style/TextViewStyle"
-                android:text="@string/tourist_text" />
+                    <Button
+                        android:id="@+id/button7"
+                        style="@style/ButtonStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/restaurants_button" />
 
-            <Button
-                android:id="@+id/button6"
-                style="@style/ButtonStyle"
-                android:text="@string/tourist_button" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                app:cardBackgroundColor="@android:color/white"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="6dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/textView2"
+                        style="@style/TextViewStyle"
+                        android:layout_marginBottom="10dp"
+                        android:text="@string/restaurants_text"
+                        android:textColor="@color/black"
+                        android:textSize="16sp" />
+
+                    <Button
+                        android:id="@+id/button6"
+                        style="@style/ButtonStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/restaurants_button" />
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
         </LinearLayout>
 
     </LinearLayout>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_alignParentBottom="true"
+        android:background="@color/light_purple"/>
 
 
 </RelativeLayout>
