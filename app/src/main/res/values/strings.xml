@@ -9,4 +9,6 @@
     <string name="restaurants_text">This will lead you to finding out whats restaurants are in your area!</string>
     <string name="tourist_text">This will lead you to finding out whats tourism spots are in your area!</string>
     <string name="tourist_button">Tourism List</string>
+    <string name="location_info">Location Unavailable</string>
+    <string name="location_unavailable">Permission not granted. Please enable location access.</string>
 </resources>

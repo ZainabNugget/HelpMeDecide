@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -33,7 +32,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -146,7 +144,7 @@ fun SettingsScreen(navController: NavController) {
         ) {
             //Will implement a dark/light theme
             InfoCards("Change The Theme!",Color.White, card_width, card_height)
-            //Increases the font size for accesibility
+            //Increases the font size for accessibility
             InfoCards("Increase font size",Color.White, card_width, card_height)
             //Giving the option to turn off location for the user
             InfoCards("Turn off location!",Color.White, card_width, card_height)

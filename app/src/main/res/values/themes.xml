@@ -6,7 +6,7 @@
         <item name="android:padding">10dp</item>
         <item name="android:textSize">16sp</item>
         <item name="android:textColor">@color/off_white</item>
-        <item name="android:backgroundTint">@color/dark_blue</item>
+        <item name="android:backgroundTint">@color/dark_blue_custom</item>
     </style>
     <style name="TextViewStyle">
         <item name="android:layout_width">match_parent</item>
@@ -16,4 +16,5 @@
         <item name="android:gravity">center</item>
     </style>
     <style name="Theme.HelpMeDecide" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.LocationService" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
 </resources>
