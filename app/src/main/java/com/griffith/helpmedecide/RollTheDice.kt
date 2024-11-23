@@ -109,10 +109,10 @@ object DiceRollerState {
 @Composable
 fun DiceRollerScreen(result: Int, onRoll: () -> Unit) {
     var isRolling by remember { mutableStateOf(false) }
-
-    val rotation = remember { Animatable(0f) } // Rotation for animation
-    val scale = remember { Animatable(1f) }   // Scale for animation
-
+    //for animation
+    val rotation = remember { Animatable(0f) }
+    val scale = remember { Animatable(1f) }
+    //will use images to draw different dice
     val imageResource = when (result) {
         1 -> R.drawable.dice_1
         2 -> R.drawable.dice_2

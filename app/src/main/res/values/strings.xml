@@ -4,4 +4,9 @@
     <string name="title_activity_dice_roll">DiceRoll</string>
     <string name="title_activity_home_page">HomePage</string>
     <string name="roll">Roll</string>
+    <string name="title_activity_location_services">Choose what you would like to do!</string>
+    <string name="restaurants_button">Restaurant List</string>
+    <string name="restaurants_text">This will lead you to finding out whats restaurants are in your area!</string>
+    <string name="tourist_text">This will lead you to finding out whats tourism spots are in your area!</string>
+    <string name="tourist_button">Tourism List</string>
 </resources>

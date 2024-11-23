@@ -172,7 +172,6 @@ fun HomeScreen(navController: NavController, onCheckLocationPermission: () -> Un
             val context = LocalContext.current
             InfoCards("Welcome", Color.White, card_width, card_height + 20.dp)
 
-            // Introduction text
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
@@ -180,11 +179,11 @@ fun HomeScreen(navController: NavController, onCheckLocationPermission: () -> Un
             ) {
                 Text(
                     text = "What are we deciding today?",
-                    textAlign = TextAlign.Center // Center text inside the Text composable
+                    textAlign = TextAlign.Center
                 )
             }
 
-            // Clickable boxes that take you to the activities
+            //Clickable boxes that take you to the activities
             Box(
                 modifier = Modifier.clickable(
                     onClick = {
@@ -198,7 +197,7 @@ fun HomeScreen(navController: NavController, onCheckLocationPermission: () -> Un
                 InfoCards("Who's gonna do it?!", Color.White, card_width, card_height)
             }
 
-            // Location Permission and Activity
+            //Location Permission and Activity
             Box(
                 modifier = Modifier.clickable(
                     onClick = { onCheckLocationPermission() },
@@ -206,7 +205,7 @@ fun HomeScreen(navController: NavController, onCheckLocationPermission: () -> Un
                     interactionSource = remember { MutableInteractionSource() }
                 )
             ) {
-                InfoCards("What should I eat?!", Color.White, card_width, card_height)
+                InfoCards("Location Generated", Color.White, card_width, card_height)
             }
 
             Box(
@@ -225,8 +224,6 @@ fun HomeScreen(navController: NavController, onCheckLocationPermission: () -> Un
     }
 }
 
-
-//TODO(Set up the implicit intents homescreen/settingsscreen)
 @Composable
 private fun BottomBarNav(navController: NavController) {
     BottomAppBar {
