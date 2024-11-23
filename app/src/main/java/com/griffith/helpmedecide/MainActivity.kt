@@ -54,7 +54,7 @@ var card_height = 150.dp
 var font_size = 15.sp
 
 class MainActivity : ComponentActivity() {
-    //get permission to use location
+    //explicitly ask to get permission to use location
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
@@ -73,6 +73,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun checkLocationPermission() {
+        //Not gonna use a fine location, a general location is fine
         if (ContextCompat.checkSelfPermission(
                 this,
                 android.Manifest.permission.ACCESS_COARSE_LOCATION
@@ -87,7 +88,6 @@ class MainActivity : ComponentActivity() {
 
 }
 
-// TODO(Implement a template for info cards, will be clickable!)
 @Composable
 fun InfoCards(text : String, color: Color, width : Dp, height : Dp){
     Card(

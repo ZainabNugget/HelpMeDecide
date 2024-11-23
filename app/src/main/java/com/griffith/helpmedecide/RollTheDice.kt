@@ -6,6 +6,7 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.Animatable
@@ -25,20 +26,30 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import kotlin.math.sqrt
 
+private const val shakeThreshold = 4.0f //when we exceed this we trigger the dice roll
+private var isRolling = false //to check if the dice is rolling
+
 class RollTheDice : ComponentActivity() {
     private var sensorManager: SensorManager? = null
-    private var isRolling = false
-    private val shakeThreshold = 7.0f // Threshold for detecting shake
+    private val _result = mutableStateOf(1) // 1 to 6 (dice)
+    private val result: State<Int> get() = _result
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            DiceRollerScreen()
+            //Our main UI, we pass in the result (dice)
+            DiceRollerScreen(result = result.value, onRoll = this::onRoll)
         }
 
+        DiceRollerState.registerShakeRollListener {
+            if (isRolling) {
+                onRoll()
+            }
+        }
+
+        //Get our sensor (Accelerometer)
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         val accelerometer = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-
         accelerometer?.let {
             sensorManager?.registerListener(
                 sensorEventListener,
@@ -53,28 +64,35 @@ class RollTheDice : ComponentActivity() {
         sensorManager?.unregisterListener(sensorEventListener)
     }
 
-    private val sensorEventListener = object : SensorEventListener {
-        private var lastAcceleration = 0f
+    private fun onRoll() {
+        if (!isRolling) {
+            isRolling = true
+            _result.value = (1..6).random()
+            isRolling = false
+        }
+    }
+}
 
-        override fun onSensorChanged(event: SensorEvent?) {
-            if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
-                var x = event.values[0]
-                var y = event.values[1]
-                var z = event.values[2]
+private val sensorEventListener = object : SensorEventListener {
+    private var lastAcceleration = 0f
 
-                val currentAcceleration = sqrt(x * x + y * y + z * z)
-                val delta = currentAcceleration - lastAcceleration
-                lastAcceleration = currentAcceleration
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
+            var x = event.values[0]
+            var y = event.values[1]
+            var z = event.values[2]
 
-                if (delta > shakeThreshold && !isRolling) {
-                    isRolling = true
-                    DiceRollerState.triggerShakeRoll() // Trigger dice roll
-                }
+            val currentAcceleration = sqrt(x * x + y * y + z * z)
+            val delta = currentAcceleration - lastAcceleration
+            lastAcceleration = currentAcceleration
+
+            if (delta > shakeThreshold && !isRolling) {
+                DiceRollerState.triggerShakeRoll()
             }
         }
-
-        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
     }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 }
 
 object DiceRollerState {
@@ -85,17 +103,15 @@ object DiceRollerState {
     }
 
     fun triggerShakeRoll() {
-        onShakeRoll?.invoke()
+        onShakeRoll?.invoke() ?: Log.e("DiceRollerState", "No listener registered for shake roll.")
     }
 }
-
 @Composable
-fun DiceRollerScreen() { //Will contain all info about the dice
-    var result by remember { mutableIntStateOf(1) } //result of the dice roll
+fun DiceRollerScreen(result: Int, onRoll: () -> Unit) {
     var isRolling by remember { mutableStateOf(false) }
 
-    val rotation = remember { Animatable(0f) } //rotation for animation
-    val scale = remember { Animatable(1f) } //scale for animation
+    val rotation = remember { Animatable(0f) } // Rotation for animation
+    val scale = remember { Animatable(1f) }   // Scale for animation
 
     val imageResource = when (result) {
         1 -> R.drawable.dice_1
@@ -108,17 +124,19 @@ fun DiceRollerScreen() { //Will contain all info about the dice
 
     val coroutineScope = rememberCoroutineScope()
 
-    DiceRollerState.registerShakeRollListener {
-        if (!isRolling) {
+    LaunchedEffect(isRolling) {
+        if (isRolling) {
+            Log.d("DiceRoller", "Starting dice roll animation...")
             coroutineScope.launch {
                 animateDiceRoll(rotation, scale) {
-                    result = (1..6).random()
+                    onRoll()
                     isRolling = false
+                    Log.d("DiceRoller", "Dice roll animation completed. Result: $result")
                 }
             }
         }
     }
-    //Layout :-)
+
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -142,11 +160,12 @@ fun DiceRollerScreen() { //Will contain all info about the dice
         Spacer(modifier = Modifier.height(10.dp))
 
         Button(
-            onClick = { //help animation and stuffs
+            onClick = {
                 if (!isRolling) {
+                    isRolling = true
                     coroutineScope.launch {
                         animateDiceRoll(rotation, scale) {
-                            result = (1..6).random()
+                            onRoll()
                             isRolling = false
                         }
                     }
@@ -156,12 +175,11 @@ fun DiceRollerScreen() { //Will contain all info about the dice
         ) {
             Text(if (isRolling) "Rolling..." else stringResource(R.string.roll))
         }
-        //add some spacing to look better
         Spacer(modifier = Modifier.height(10.dp))
-        Text("Your chosen dice was.... $result") //display the result (for now)
+        Text("Your chosen dice was.... $result")
     }
 }
-//Animation handling, (rotating the dice)
+
 suspend fun animateDiceRoll(
     rotation: Animatable<Float, *>,
     scale: Animatable<Float, *>,
@@ -172,14 +190,14 @@ suspend fun animateDiceRoll(
         animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
     )
     rotation.snapTo(0f)
-
     onComplete()
 }
+
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewDiceCanvas() {
     MaterialTheme {
-        DiceRollerScreen()
+        DiceRollerScreen(result = 1, onRoll = {})
     }
 }
