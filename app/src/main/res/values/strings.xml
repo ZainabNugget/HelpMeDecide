@@ -11,4 +11,5 @@
     <string name="tourist_button">Tourism List</string>
     <string name="location_info">Location Unavailable</string>
     <string name="location_unavailable">Permission not granted. Please enable location access.</string>
+    <string name="places_api_key">AIzaSyCllA4fDKzo_xhNro7R8TsIoMLwb9-wAuo</string>
 </resources>
