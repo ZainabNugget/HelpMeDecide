@@ -4,6 +4,12 @@
     <string name="title_activity_dice_roll">DiceRoll</string>
     <string name="title_activity_home_page">HomePage</string>
     <string name="roll">Roll</string>
+    <string name="first_card">Who`s gonna do it?</string>
+    <string name="first_desc">Use dice rolls to determine your fate.</string>
+    <string name="second_card">Location based lists</string>
+    <string name="second_desc">We use your location to make up a list of restaurants.</string>
+    <string name="third_card">Generate my own list.</string>
+    <string name="third_desc">Generate your own list of things, decide with spinning the wheel.</string>
     <string name="title_activity_location_services">Choose what you would like to do!</string>
     <string name="restaurants_button">Restaurant List</string>
     <string name="restaurants_text">This will lead you to finding out whats restaurants are in your area!</string>
@@ -12,4 +18,5 @@
     <string name="location_info">Location Unavailable</string>
     <string name="location_unavailable">Permission not granted. Please enable location access.</string>
     <string name="places_api_key">AIzaSyCllA4fDKzo_xhNro7R8TsIoMLwb9-wAuo</string>
+    <string name="welcome">Welcome</string>
 </resources>

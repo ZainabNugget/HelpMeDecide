@@ -15,6 +15,10 @@
         <item name="android:textColor">@android:color/black</item>
         <item name="android:gravity">center</item>
     </style>
-    <style name="Theme.HelpMeDecide" parent="android:Theme.Material.Light.NoActionBar" />
+<!--    <style name="Theme.HelpMeDecide" parent="android:Theme.Material.Light.NoActionBar" />-->
+    <style name="Theme.HelpMeDecide" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize as needed -->
+    </style>
+
     <style name="Theme.LocationService" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
 </resources>

@@ -56,7 +56,7 @@ class MainActivity : ComponentActivity() {
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
-                val intent = Intent(this, SpinTheWheel::class.java)
+                val intent = Intent(this, LocationService::class.java)
                 startActivity(intent)
             } else {
                 Toast.makeText(this, "Location permission is required to proceed.", Toast.LENGTH_SHORT).show()
@@ -185,7 +185,7 @@ fun HomeScreen(navController: NavController, onCheckLocationPermission: () -> Un
             Box(
                 modifier = Modifier.clickable(
                     onClick = {
-                        val intent = Intent(context, LocationService::class.java)
+                        val intent = Intent(context, RollTheDice::class.java)
                         context.startActivity(intent)
                     },
                     indication = rememberRipple(bounded = true, color = Color.Gray),
