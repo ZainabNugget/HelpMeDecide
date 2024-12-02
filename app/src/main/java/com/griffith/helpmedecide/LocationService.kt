@@ -24,7 +24,7 @@ import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse
 import com.google.android.libraries.places.api.net.PlacesClient
 class LocationService : AppCompatActivity() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var placesClient: PlacesClient  // Declare at the class level
+    private lateinit var placesClient: PlacesClient
     private val apiKey = R.string.places_api_key
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,12 +36,11 @@ class LocationService : AppCompatActivity() {
             insets
         }
 
-        // Initialize the Places API
         if (!Places.isInitialized()) {
-            Places.initialize(applicationContext, getString(apiKey))  // Correctly use getString to access the API key
+            Places.initialize(applicationContext, getString(apiKey))
         }
 
-        placesClient = Places.createClient(this)  // Now initialize the placesClient properly
+        placesClient = Places.createClient(this)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         val locationTextView = findViewById<TextView>(R.id.location)
@@ -78,7 +77,7 @@ class LocationService : AppCompatActivity() {
             placeResponse.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val response = task.result
-                    // Iterate over the places found
+                    //Iterate over the places found
                     response?.placeLikelihoods?.forEach { placeLikelihood ->
                         val placeName = placeLikelihood.place.name
                         val likelihood = placeLikelihood.likelihood
