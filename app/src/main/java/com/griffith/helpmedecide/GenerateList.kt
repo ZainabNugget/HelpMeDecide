@@ -1,5 +1,12 @@
 package com.griffith.helpmedecide
 
+/*
+* Name: Zainab Wadullah
+* BSCH - Stage 4 MD
+* Student Number: 3088942
+* */
+
+
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity

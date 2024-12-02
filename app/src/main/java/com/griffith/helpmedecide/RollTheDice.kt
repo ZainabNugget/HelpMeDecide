@@ -1,4 +1,9 @@
 package com.griffith.helpmedecide
+/*
+* Name: Zainab Wadullah
+* BSCH - Stage 4 MD
+* Student Number: 3088942
+* */
 
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -26,7 +31,7 @@ private const val Cooldown = 200L
 
 class RollTheDice : ComponentActivity(), SensorEventListener {
     private var sensorManager: SensorManager? = null
-
+    //For drawinf the dice
     private val _result = mutableStateOf(1)
     private val _isRolling = mutableStateOf(false)
     private val _showDialog = mutableStateOf(false)
@@ -42,8 +47,10 @@ class RollTheDice : ComponentActivity(), SensorEventListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        //sensro manager to get the data
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         setContent {
+            //our main component
             DiceRollerScreen(
                 result = result.value,
                 isRolling = _isRolling.value,
@@ -56,21 +63,26 @@ class RollTheDice : ComponentActivity(), SensorEventListener {
     }
 
     override fun onPause() {
+        //when the device isnt moving
         super.onPause()
         sensorManager?.unregisterListener(this)
     }
 
     override fun onResume() {
+        //when they sense a change
         super.onResume()
         sensorManager?.registerListener(
             this,
+            //we're using TYPE acceleeromete
             sensorManager!!.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
             SensorManager.SENSOR_DELAY_NORMAL)
     }
 
     private fun onRoll() {
+        //called whenevber the system detects shaking
         val currentTime = System.currentTimeMillis()
         if(currentTime - lastUpdatedTime > Cooldown){
+            //randomsises from 1 to 6
             _result.value = (1..6).random()
         }
     }
@@ -99,7 +111,7 @@ class RollTheDice : ComponentActivity(), SensorEventListener {
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // No specific handling for accuracy changes in this app
+        // TODO()
     }
 }
 
@@ -111,9 +123,10 @@ fun DiceRollerScreen(
     onRoll: () -> Unit,
     onDialogDismiss: () -> Unit
 ) {
+    //for potential animation
     val rotation = remember { Animatable(0f) }
     val scale = remember { Animatable(1f) }
-
+    //using images i drew
     val imageResource = when (result) {
         1 -> R.drawable.dice_1
         2 -> R.drawable.dice_2
@@ -122,6 +135,7 @@ fun DiceRollerScreen(
         5 -> R.drawable.dice_5
         else -> R.drawable.dice_6
     }
+    //will implement firther, shows alot of errors
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { onDialogDismiss() },
@@ -147,6 +161,7 @@ fun DiceRollerScreen(
             )
         ) {
             Image(
+                //paint the dice
                 painter = painterResource(imageResource),
                 contentDescription = "Dice showing $result"
             )
@@ -164,8 +179,7 @@ fun DiceRollerScreen(
         }
 
         Spacer(modifier = Modifier.height(10.dp))
-
-        // Result text
+        //resulting dice
         Text("Your rolled dice: $result")
     }
 }
