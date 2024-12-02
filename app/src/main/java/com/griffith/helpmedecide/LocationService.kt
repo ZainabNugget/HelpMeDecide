@@ -1,4 +1,9 @@
 package com.griffith.helpmedecide
+/*
+* Name: Zainab Wadullah
+* BSCH - Stage 4 MD
+* Student Number: 3088942
+* */
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -23,19 +28,23 @@ import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse
 import com.google.android.libraries.places.api.net.PlacesClient
 class LocationService : AppCompatActivity() {
+    //helps get the location
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    //from google
     private lateinit var placesClient: PlacesClient
+    //this is api key for google places api
     private val apiKey = R.string.places_api_key
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        //refer to the res/xml/activity_location_services file, the design is all there
         setContentView(R.layout.activity_location_service)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
+        //init places
         if (!Places.isInitialized()) {
             Places.initialize(applicationContext, getString(apiKey))
         }
@@ -44,6 +53,7 @@ class LocationService : AppCompatActivity() {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         val locationTextView = findViewById<TextView>(R.id.location)
+        //make sure permission is already gotten from user
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_COARSE_LOCATION
@@ -63,7 +73,7 @@ class LocationService : AppCompatActivity() {
             locationTextView.setText(R.string.location_unavailable)
         }
     }
-
+    //get the neraby places using the api
     private fun getNearbyPlaces(latitude: Double, longitude: Double) {
         val placeFields = listOf(Place.Field.NAME)
         val placeResponse: Task<FindCurrentPlaceResponse>
@@ -81,6 +91,7 @@ class LocationService : AppCompatActivity() {
                     response?.placeLikelihoods?.forEach { placeLikelihood ->
                         val placeName = placeLikelihood.place.name
                         val likelihood = placeLikelihood.likelihood
+                        //log it for now
                         Log.i("NearbyPlaces", "Place: $placeName, Likelihood: $likelihood")
                     }
                 } else {
