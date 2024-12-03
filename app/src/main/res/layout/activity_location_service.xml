@@ -71,7 +71,7 @@
                         android:textSize="16sp" />
 
                     <Button
-                        android:id="@+id/button7"
+                        android:id="@+id/restaurantBtn"
                         style="@style/ButtonStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -104,7 +104,7 @@
                         android:textSize="16sp" />
 
                     <Button
-                        android:id="@+id/button6"
+                        android:id="@+id/tourismBtn"
                         style="@style/ButtonStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -117,12 +117,18 @@
 
         </LinearLayout>
 
-<!--        <com.google.android.material.bottomnavigation.BottomNavigationView-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="50dp"-->
-<!--            android:background="@color/light_purple" />-->
-
     </LinearLayout>
 
+    <!-- Bottom Navigation Bar -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation_view"
+        android:layout_width="match_parent"
+        android:layout_height="68dp"
+        android:layout_alignParentBottom="true"
+        android:background="@color/white"
+        app:itemIconTint="@color/dark_blue_custom"
+        app:itemTextColor="@color/dark_blue_custom"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/bottom_nav_menu" />
 
 </RelativeLayout>

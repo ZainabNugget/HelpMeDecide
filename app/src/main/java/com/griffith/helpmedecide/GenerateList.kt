@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalLayoutApi::class)
+
 package com.griffith.helpmedecide
 
 /*
@@ -6,25 +8,31 @@ package com.griffith.helpmedecide
 * Student Number: 3088942
 * */
 
-
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imeNestedScroll
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -34,6 +42,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
@@ -54,8 +64,7 @@ class GenerateList : ComponentActivity() {
 
 @Composable //Creating list composable, will include trextfeilds
 fun CreateList(onListComplete: (List<String>) -> Unit) {
-    //number of items within a list
-    var numberOfItems by remember { mutableStateOf("") }
+    var numberOfItems by remember { mutableStateOf("") }//number of items within a list
     var itemsCount by remember { mutableIntStateOf(0) } //how many items
     val items = remember { mutableStateListOf<String>() } //items themselves
     var newItem by remember { mutableStateOf("") } //get the item from the textfeild
@@ -63,8 +72,9 @@ fun CreateList(onListComplete: (List<String>) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center //vertically aligned
+            .padding(16.dp)
+            .imePadding()
+            .imeNestedScroll(),
     ) {
         //Title of the list activity
         Text(
@@ -80,14 +90,13 @@ fun CreateList(onListComplete: (List<String>) -> Unit) {
                 itemsCount = input.toIntOrNull() ?: 0
             },
             label = { Text("Enter Number of Items") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         )
         //Keeping track of what items are left to add
         Text(
             text = "Number of items left to create: $itemsCount",
             modifier = Modifier.padding(vertical = 8.dp)
         )
-
         //if we havent reached the limit we keep adding
         if (items.size < itemsCount) {
             TextField(
@@ -120,7 +129,6 @@ fun CreateList(onListComplete: (List<String>) -> Unit) {
                 onClick = { onListComplete(items.toList()) },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // TODO(Implement a way to take this into the spin the wheel acitivyt)
                 Text("Complete List")
             }
         }
@@ -141,7 +149,7 @@ fun CreateList(onListComplete: (List<String>) -> Unit) {
                     modifier = Modifier.weight(1f)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                //Giver the user the option to remove an item from the list
+                //Give the user the option to remove an item from the list
                 Button(
                     onClick = { items.removeAt(index) },//removes from the list
                     modifier = Modifier

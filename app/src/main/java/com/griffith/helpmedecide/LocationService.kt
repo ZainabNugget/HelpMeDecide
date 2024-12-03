@@ -6,12 +6,15 @@ package com.griffith.helpmedecide
 * */
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -27,14 +30,24 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse
 import com.google.android.libraries.places.api.net.PlacesClient
+import com.google.android.libraries.places.api.net.SearchNearbyRequest
+
 class LocationService : AppCompatActivity() {
     //helps get the location
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     //from google
     private lateinit var placesClient: PlacesClient
+    private val restaurantList = mutableListOf<String>()
+    private val tourismList = mutableListOf<String>()
+
     //this is api key for google places api
     private val apiKey = R.string.places_api_key
-
+    /*
+    * val intent = Intent(this, SpinTheWheel::class.java)
+                intent.putStringArrayListExtra("ITEMS_LIST", ArrayList(list))
+                intent.putExtra("IS_USER_GENERATED", true)
+                startActivity(intent)
+    * */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //refer to the res/xml/activity_location_services file, the design is all there
@@ -64,7 +77,9 @@ class LocationService : AppCompatActivity() {
                     val center = LatLng(location.latitude, location.longitude)
                     val search_radius = CircularBounds.newInstance(center, 1000.0)
                     locationTextView.text = "Latitude: ${location.latitude}, Longitude: ${location.longitude}"
-                    getNearbyPlaces(location.latitude, location.longitude)
+                    getNearbyRestaurants(location.latitude, location.longitude, restaurantList, listOf("restaurant"))
+                    getNearbyRestaurants(location.latitude, location.longitude, tourismList, listOf("tourist_attraction"))
+
                 } else { //if location unavailable
                     locationTextView.setText(R.string.location_info)
                 }
@@ -72,35 +87,70 @@ class LocationService : AppCompatActivity() {
         } else { //If we don't have permission to access location!
             locationTextView.setText(R.string.location_unavailable)
         }
-    }
-    //get the neraby places using the api
-    private fun getNearbyPlaces(latitude: Double, longitude: Double) {
-        val placeFields = listOf(Place.Field.NAME)
-        val placeResponse: Task<FindCurrentPlaceResponse>
-        val request = FindCurrentPlaceRequest.newInstance(placeFields)
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            placeResponse = placesClient.findCurrentPlace(request)
-            placeResponse.addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val response = task.result
-                    //Iterate over the places found
-                    response?.placeLikelihoods?.forEach { placeLikelihood ->
-                        val placeName = placeLikelihood.place.name
-                        val likelihood = placeLikelihood.likelihood
-                        //log it for now
-                        Log.i("NearbyPlaces", "Place: $placeName, Likelihood: $likelihood")
-                    }
-                } else {
-                    val exception = task.exception
-                    if (exception is ApiException) {
-                        Log.e("NearbyPlaces", "Error: ${exception.statusCode}")
-                    }
-                }
+
+        val restaurantBtn : Button = findViewById(R.id.restaurantBtn)
+        restaurantBtn.setOnClickListener {
+            val intent = Intent(this, SpinTheWheel::class.java)
+            intent.putStringArrayListExtra("RESTAURANT_LIST", ArrayList(restaurantList))
+            intent.putExtra("LOCATION_GENERATED", true)
+            startActivity(intent)
+        }
+
+        val tourismBtn : Button = findViewById(R.id.tourismBtn)
+        tourismBtn.setOnClickListener {
+            if(tourismList.isNotEmpty()){
+                val intent = Intent(this, SpinTheWheel::class.java)
+                intent.putStringArrayListExtra("RESTAURANT_LIST", ArrayList(tourismList))
+                intent.putExtra("LOCATION_GENERATED", true)
+                startActivity(intent)
+            } else {
+
             }
         }
+
     }
+
+    private fun getNearbyRestaurants(latitude: Double, longitude: Double, list: MutableList<String>, includedTypes:List<String> ) {
+        // Check for permissions before making a request
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // Handle case where permission is not granted
+            Log.e("NearbyPlaces", "Location permission not granted")
+            return
+        }
+
+        //Define place fields to include in the response
+        val placeFields = listOf(Place.Field.NAME, Place.Field.ADDRESS, Place.Field.ID)
+        val center = LatLng(latitude, longitude)
+        val radius = 1000
+        val circle = CircularBounds.newInstance(center, radius.toDouble())
+
+        //Create a SearchNearbyRequest using the location, place fields, and types
+        val searchNearbyRequest = SearchNearbyRequest.builder(circle, placeFields)
+            .setIncludedTypes(includedTypes)
+            .setMaxResultCount(10)
+            .build()
+
+        //call the Places API to search for nearby places
+        placesClient.searchNearby(searchNearbyRequest)
+            .addOnSuccessListener { response ->
+                //Iterate through the places and log the results
+                response?.places?.forEach { place ->
+                    val placeName = place.name
+                    val placeAddress = place.address
+                    if (placeName != null) {
+                        list.add(placeName)
+                    }
+                    Log.i("Nearby", "Yay $placeName")
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.e("NearbyRestaurants", "Error fetching places: ${exception.message}")
+            }
+
+    }
+
 }

@@ -17,10 +17,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.griffith.helpmedecide.databinding.ActivityMainTrialBinding
 
 class HomePage : AppCompatActivity() {
-    private lateinit var binding : ActivityMainTrialBinding
     //explicitly ask to get permission to use location
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
@@ -38,7 +36,7 @@ class HomePage : AppCompatActivity() {
                 android.Manifest.permission.ACCESS_COARSE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            val intent = Intent(this, SpinTheWheel::class.java)
+            val intent = Intent(this, LocationService::class.java)
             startActivity(intent)
         } else {
             requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
@@ -54,21 +52,21 @@ class HomePage : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
+        //get all the buttons
         val rollTheDiceBtn : CardView = findViewById(R.id.rollTheDice)
         val ownListBtn : CardView = findViewById(R.id.ownListBtn)
         val locationServiceBtn : CardView = findViewById(R.id.locationServiceBtn)
-
+        //go to roll the dice page
         rollTheDiceBtn.setOnClickListener {
             val intent = Intent(this, RollTheDice::class.java)
             startActivity(intent)
         }
-
+        //go to geenerate list activity
         ownListBtn.setOnClickListener{
             val intent = Intent(this, GenerateList::class.java)
             startActivity(intent)
         }
-
+        //go to location service activity
         locationServiceBtn.setOnClickListener{
             checkLocationPermission() //check permission before moving on :)
         }
@@ -85,8 +83,6 @@ class HomePage : AppCompatActivity() {
                 }
                 else -> false
             }
-
         }
-
     }
 }

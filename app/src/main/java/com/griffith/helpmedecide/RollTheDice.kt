@@ -15,6 +15,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,6 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.google.android.material.color.utilities.Score
 
 private const val SHAKE_THRESHOLD = 25
 //to avoid excessive shaking :3
@@ -44,10 +46,14 @@ class RollTheDice : ComponentActivity(), SensorEventListener {
     var lastUpdatedTime : Long = 0
     var timeDifference : Long = 0
 
+    private var currentPlayer = 0;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //sensro manager to get the data
+
+        val size = Data.size
+
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         setContent {
             //our main component
@@ -55,11 +61,35 @@ class RollTheDice : ComponentActivity(), SensorEventListener {
                 result = result.value,
                 isRolling = _isRolling.value,
                 showDialog = _showDialog.value,
-                onRoll = this::onRoll,
+                onRoll = this::onRollCurrentPlayer,
                 onDialogDismiss = { _showDialog.value = false }
             )
+            ScoreBoard(Data)
         }
 
+    }
+
+    fun nextPlayer(){
+        currentPlayer++ //increrment player
+    }
+
+    fun updateScores(index : Int, result : Int){ //replace
+        val updatedList = Data.toMutableList()
+        val name = Data[index].name
+        val prev = Data[index].score
+        updatedList[index] = Scores(name, prev + result)
+        Data.clear()
+        Data.addAll(updatedList)
+    }
+
+    fun onRollCurrentPlayer(){
+        if (currentPlayer >= Data.size) return
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastUpdatedTime > Cooldown) {
+            val roll = (1..6).random()
+            _result.value = roll
+            updateScores(currentPlayer, roll)
+        }
     }
 
     override fun onPause() {
@@ -181,6 +211,62 @@ fun DiceRollerScreen(
         Spacer(modifier = Modifier.height(10.dp))
         //resulting dice
         Text("Your rolled dice: $result")
+    }
+}
+
+data class Scores(
+    val name: String,
+    val score: Int
+)
+
+val Data = mutableStateListOf(
+    Scores("Alice", 0),
+    Scores("Eric", 0),
+    Scores("Alice", 0),
+    Scores("Eric", 0),
+    Scores("Alice", 0),
+    Scores("Eric", 0)
+)
+
+@Composable
+fun ScoreBoard(Data : List<Scores>){
+    //horizontal scroll, based on the amount of people in the list
+    //for loop that goes throught the peaople and creates
+    Column {
+        Text("ScoreBoard")
+        LazyRow(
+            modifier = Modifier.fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(Data.size) { //loop through the people
+                index -> ScoreCard(Data[index])
+            }
+        }
+    }
+}
+
+@Composable
+fun ScoreCard(score : Scores){
+    Card (
+        modifier = Modifier.size(width = 80.dp, height = 80.dp)
+    ){
+        Column (
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Text(text=score.name)
+            Text(text ="${score.score}")
+        }
+    }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewScoreBoard() {
+    MaterialTheme {
+        ScoreBoard(Data)
     }
 }
 

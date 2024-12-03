@@ -4,7 +4,6 @@ package com.griffith.helpmedecide
 * BSCH - Stage 4 MD
 * Student Number: 3088942
 * */
-
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -52,9 +51,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 
-var card_width = 450.dp
-var card_height = 150.dp
-var font_size = 15.sp
+var card_width = 450.dp //card width
+var card_height = 150.dp //card height
+var font_size = 15.sp //font size
 
 class MainActivity : ComponentActivity() {
     //explicitly ask to get permission to use location

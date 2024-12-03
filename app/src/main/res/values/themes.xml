@@ -19,6 +19,5 @@
     <style name="Theme.HelpMeDecide" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize as needed -->
     </style>
-
     <style name="Theme.LocationService" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
 </resources>
