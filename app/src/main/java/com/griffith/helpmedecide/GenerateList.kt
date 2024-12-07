@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalLayoutApi::class)
-
 package com.griffith.helpmedecide
 
 /*
@@ -8,37 +6,45 @@ package com.griffith.helpmedecide
 * Student Number: 3088942
 * */
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imeNestedScroll
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.Typography
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -49,58 +55,135 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.colorResource
 
 val ofF_white : Int = R.color.off_white
+val gold : Int = R.color.gold
+val CustomFontFamily = FontFamily(
+    Font(R.font.dragon_hunter)
+)
 
 class GenerateList : ComponentActivity() {
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             val databaseManager = DatabaseManager(this)
             val allData = databaseManager.getAllLists()
             allData.forEach { Log.i("Database", it.toString()) }
+            val customTypography = Typography(
+                titleLarge = MaterialTheme.typography.titleLarge.copy(fontFamily = CustomFontFamily),
+                bodyLarge = MaterialTheme.typography.bodyLarge.copy(fontFamily = CustomFontFamily),
+            )
+            val darkBlue = colorResource(id = R.color.dark_blue_custom)
+            val lightGold = colorResource(id = R.color.light_gold)
+            val lightBlue = colorResource(id = R.color.light_blue_custom)
 
             val backGroundColor : Int = LocalContext.current.getColor(R.color.dark_blue_custom)
             //Will switch the intent to the spin the wheel activity
-            Column(
-                modifier = Modifier.verticalScroll(rememberScrollState())
-                    .background(Color(backGroundColor))
-            ) {
-                CreateList(databaseManager) { list ->
-                    val intent = Intent(this@GenerateList, SpinTheWheel::class.java)
-                    intent.putStringArrayListExtra("ITEMS_LIST", ArrayList(list))
-                    intent.putExtra("IS_USER_GENERATED", true)
-                    startActivity(intent)
-                }
-                ShowPreviousLists(db = databaseManager)
+            MaterialTheme(typography = customTypography) {
+              Scaffold(
+                  modifier = Modifier.fillMaxSize(),
+                  topBar = {
+                      LargeTopAppBar(
+                          colors = TopAppBarDefaults.topAppBarColors(
+                              containerColor = darkBlue,
+                              titleContentColor = Color(LocalContext.current.getColor(ofF_white)),
+                          ),
+                          title = { Text("Generate List") }
+                      )
+                  },
+                  bottomBar = {
+                    BottomAppBar(
+                        containerColor = Color(LocalContext.current.getColor(R.color.gold)),
+                        contentColor = Color(LocalContext.current.getColor(R.color.off_white))
+                    ) {
+                        IconButton(onClick = {
+                            val intent = Intent(this@GenerateList, HomePage::class.java)
+                            startActivity(intent)
+                        }) {
+                            Icon(imageVector = Icons.Default.Home, contentDescription = "Home")
+                        }
+                    }
+                  },
+                  content = { paddingValues ->
+                      Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .background(Color(backGroundColor))
+                            .padding(paddingValues)
+                            .border(
+                                border = BorderStroke(2.dp, Color(LocalContext.current.getColor(R.color.gold))),
+                                shape = RoundedCornerShape(16.dp)
+                        )
+                        .padding(16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            CreateList(databaseManager) { list ->
+                                val intent = Intent(this@GenerateList, SpinTheWheel::class.java)
+                                intent.putStringArrayListExtra("ITEMS_LIST", ArrayList(list))
+                                intent.putExtra("IS_USER_GENERATED", true)
+                                startActivity(intent)
+                            }
+                        }
+                          Row(
+                              modifier = Modifier
+                                  .fillMaxWidth()
+                                  .align(Alignment.CenterHorizontally)
+                                  .padding(vertical = 8.dp),
+                              horizontalArrangement = Arrangement.Center
+                          ) {
+                              ExpandableCardList(this@GenerateList, databaseManager)
+                          }
+                    }
+                  }
+              )
             }
-
         }
     }
 }
 
-@Composable //Creating list composable, will include trextfeilds
+@Composable //Creating list composable, will include text fields
 fun CreateList(db : DatabaseManager, onListComplete: (List<String>) -> Unit) {
     var numberOfItems by remember { mutableStateOf("") }//number of items within a list
     var itemsCount by remember { mutableIntStateOf(0) } //how many items
     val items = remember { mutableStateListOf<String>() } //items themselves
-    var newItem by remember { mutableStateOf("") } //get the item from the textfeild
+    var newItem by remember { mutableStateOf("") } //get the item from the text field
     var listName by remember { mutableStateOf("") } //get the name of the list
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
             .padding(16.dp)
+            .background(Color(LocalContext.current.getColor(R.color.dark_blue_custom)))
     ) {
         //Title of the list activity
         Text(
             text = "Generate a list below!",
             modifier = Modifier.padding(vertical = 8.dp).align(Alignment.CenterHorizontally),
-            color = Color(ofF_white),
+            color = Color(LocalContext.current.getColor(R.color.off_white)),
             style = MaterialTheme.typography.titleLarge
         )
         //Adding the items list size
@@ -125,9 +208,10 @@ fun CreateList(db : DatabaseManager, onListComplete: (List<String>) -> Unit) {
         //Keeping track of what items are left to add
         Text(
             text = "Number of items left to create: $itemsCount",
+            color = Color(LocalContext.current.getColor(ofF_white)),
             modifier = Modifier.padding(vertical = 8.dp)
         )
-        //if we havent reached the limit we keep adding
+        //if we haven't reached the limit we keep adding
         if (items.size < itemsCount) {
             TextField(
                 value = newItem,
@@ -137,6 +221,10 @@ fun CreateList(db : DatabaseManager, onListComplete: (List<String>) -> Unit) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Button(
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(LocalContext.current.getColor(R.color.gold)),
+                    contentColor = Color(LocalContext.current.getColor(R.color.off_white))
+                ),
                 onClick = {
                     if (newItem.isNotEmpty()) {
                         items.add(newItem)
@@ -151,13 +239,18 @@ fun CreateList(db : DatabaseManager, onListComplete: (List<String>) -> Unit) {
 
             Text(
                 text = "Items added: ${items.size} / $itemsCount",
+                color = Color(LocalContext.current.getColor(ofF_white)),
                 modifier = Modifier.padding(vertical = 8.dp)
             )
         } else if (items.size == itemsCount && itemsCount > 0) {
             //if the limit was reached we can stop the adding and complete the list
             Button(
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(LocalContext.current.getColor(R.color.gold)),
+                    contentColor = Color(LocalContext.current.getColor(R.color.off_white))
+                ),
                 onClick = {
-                    AddToDatabase(listName, items.toList(), db)
+                    addToDatabase(listName, items.toList(), db)
                     onListComplete(items.toList())
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -168,7 +261,9 @@ fun CreateList(db : DatabaseManager, onListComplete: (List<String>) -> Unit) {
 
         //Show the user what kind of list they created
         Spacer(modifier = Modifier.height(16.dp))
-        Text("Current List:", style = MaterialTheme.typography.bodyLarge)
+        Text("Current List:",
+            color = Color(LocalContext.current.getColor(ofF_white)),
+            style = MaterialTheme.typography.bodyLarge)
 
         items.forEachIndexed { index, item ->
             Row(
@@ -184,6 +279,10 @@ fun CreateList(db : DatabaseManager, onListComplete: (List<String>) -> Unit) {
                 Spacer(modifier = Modifier.width(8.dp))
                 //Give the user the option to remove an item from the list
                 Button(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(LocalContext.current.getColor(R.color.gold)),
+                        contentColor = Color(LocalContext.current.getColor(R.color.off_white))
+                    ),
                     onClick = { items.removeAt(index) },//removes from the list
                     modifier = Modifier
                         .padding(start = 8.dp)
@@ -192,76 +291,148 @@ fun CreateList(db : DatabaseManager, onListComplete: (List<String>) -> Unit) {
                     Text("X")
                 }
             }
+
         }
     }
 }
 
-fun AddToDatabase(name : String, list : List<String>, db:DatabaseManager){
-    val list_to_string = list.joinToString(":")
-    Log.i("ListString", list_to_string)
-    db.addList(name, list_to_string) //add to database :3
+fun addToDatabase(name : String, list : List<String>, db:DatabaseManager){
+    val stringList = list.joinToString(":")
+    Log.i("ListString", stringList)
+    db.addList(name, stringList) //add to database :3
 }
 
 
 @Composable
-fun ShowPreviousLists(db : DatabaseManager){
+fun ShowPreviousLists(db : DatabaseManager, onListComplete: (List<String>) -> Unit){
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        // Title Row
-        Text(
-            text = "Check out your previous lists:",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(ofF_white),
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(bottom = 8.dp) // Add spacing below the title
-        )
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Display the list of items
         db.getAllLists().forEach { item ->
-            Column(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp) // Add vertical spacing between items
+                    .padding(vertical = 4.dp)
                     .background(
-                        color = Color(0xFFF1F1F1), // Light gray background for each list item
+                        color = Color(LocalContext.current.getColor(R.color.brown)),
                         shape = RoundedCornerShape(8.dp)
                     )
-                    .padding(12.dp) // Padding inside the background
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "List Name: ${item.first}",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.Black
-                )
-                Text(
-                    text = "Items: ${item.second}",
-                    fontSize = 12.sp,
-                    color = Color.DarkGray
-                )
+                Column(
+                    modifier = Modifier.weight(1f)
+                )  {
+                    Text(
+                        text = "List Name: ${item.first}",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(LocalContext.current.getColor(R.color.off_white))
+                    )
+                    Text(
+                        text = "Items: ${item.second}",
+                        fontSize = 12.sp,
+                        color = Color(LocalContext.current.getColor(R.color.off_white))
+                    )
+                }
+                //Align to the end (the right)
+                Column(
+                    horizontalAlignment = Alignment.End,
+                ) {
+                    Button(
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(LocalContext.current.getColor(R.color.gold)),
+                            contentColor = Color(LocalContext.current.getColor(R.color.off_white))
+                        ),
+                        onClick = {
+                            //separate the list based on : and add to list
+                            onListComplete(item.second.split(":"))
+                        },//removes from the list
+                        modifier = Modifier
+                            .padding(start = 8.dp)
+                            .size(40.dp)
+                    ) {
+                        Text("X")
+                    }
+                }
+
             }
-            Spacer(modifier = Modifier.height(8.dp)) // Add spacing between each list block
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 
 }
-
-@Preview (showBackground = true)
 @Composable
-fun PreviewLists(){
-    val db : DatabaseManager = DatabaseManager(LocalContext.current)
-    ShowPreviousLists(db)
+fun ExpandableCard(title: String, context : Context, db: DatabaseManager) {
+    //to track the expansion
+    var isExpanded by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clickable { isExpanded = !isExpanded },
+        colors = CardDefaults.cardColors(
+            containerColor =Color(LocalContext.current.getColor(gold)),
+            contentColor = Color(LocalContext.current.getColor(ofF_white))
+        ),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = title,
+                fontSize = 18.sp
+            )
+
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = expandVertically(), //Animation for expanding
+                exit = shrinkVertically() //Animation for collapse
+            ) {
+                ShowPreviousLists(db = db) { list ->
+                    val intent = Intent(context, SpinTheWheel::class.java)
+                    intent.putStringArrayListExtra("ITEMS_LIST", ArrayList(list))
+                    intent.putExtra("IS_USER_GENERATED", true)
+                    context.startActivity(intent)
+                }
+            }
+        }
+    }
 }
+
+@Composable
+fun ExpandableCardList(context: Context, db : DatabaseManager) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        ExpandableCard(
+            title = "Check out your previous lists",
+            context = context,
+            db = db
+        )
+    }
+}
+//@Preview (showBackground = true)
+//@Composable
+//fun PreviewLists(){
+//    val db : DatabaseManager = DatabaseManager(LocalContext.current)
+//    ShowPreviousLists(db)
+//}
 
 //@Preview (showBackground = true)
 //@Composable
 //fun PreviewList(){
-//    CreateList {  }
+//    val db = DatabaseManager(LocalContext.current)
+//    CreateList(db) {  }
+//}
+
+//@Preview (showBackground = true)
+//@Composable
+//fun ExpandableCardListPreview(){
+//    ExpandableCardList()
 //}

@@ -30,7 +30,8 @@
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
         <activity
             android:name=".GenerateList"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.HelpMeDecide" />
         <activity
             android:name=".RollTheDice"
             android:exported="false" />
