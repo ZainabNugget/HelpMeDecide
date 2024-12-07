@@ -21,8 +21,10 @@ import androidx.core.view.WindowInsetsCompat
 import com.android.volley.BuildConfig
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.Task
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.CircularBounds
@@ -72,18 +74,37 @@ class LocationService : AppCompatActivity() {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-                if (location != null) {
-                    val center = LatLng(location.latitude, location.longitude)
-                    val search_radius = CircularBounds.newInstance(center, 1000.0)
-                    locationTextView.text = "Latitude: ${location.latitude}, Longitude: ${location.longitude}"
-                    getNearbyRestaurants(location.latitude, location.longitude, restaurantList, listOf("restaurant"))
-                    getNearbyRestaurants(location.latitude, location.longitude, tourismList, listOf("tourist_attraction"))
+            val priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            val cancellationTokenSource = CancellationTokenSource()
 
-                } else { //if location unavailable
-                    locationTextView.setText(R.string.location_info)
+            fusedLocationClient.getCurrentLocation(priority, cancellationTokenSource.token)
+                .addOnSuccessListener { location ->
+                    if (location != null) {
+                        val center = LatLng(location.latitude, location.longitude)
+                        val search_radius = CircularBounds.newInstance(center, 1000.0)
+                        locationTextView.text = "Latitude: ${location.latitude}, Longitude: ${location.longitude}"
+                        getNearbyRestaurants(location.latitude, location.longitude, restaurantList, listOf("restaurant"))
+                        getNearbyRestaurants(location.latitude, location.longitude, tourismList, listOf("tourist_attraction"))
+                    } else { //if location unavailable
+                        locationTextView.setText(R.string.location_info)
+                    }
+                        Log.d("Location", "location is found: $location")
+                    }
+                .addOnFailureListener { exception ->
+                    Log.d("Location", "Oops location failed with exception: $exception")
                 }
-            }
+//            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+//                if (location != null) {
+//                    val center = LatLng(location.latitude, location.longitude)
+//                    val search_radius = CircularBounds.newInstance(center, 1000.0)
+//                    locationTextView.text = "Latitude: ${location.latitude}, Longitude: ${location.longitude}"
+//                    getNearbyRestaurants(location.latitude, location.longitude, restaurantList, listOf("restaurant"))
+//                    getNearbyRestaurants(location.latitude, location.longitude, tourismList, listOf("tourist_attraction"))
+//
+//                } else { //if location unavailable
+//                    locationTextView.setText(R.string.location_info)
+//                }
+//            }
         } else { //If we don't have permission to access location!
             locationTextView.setText(R.string.location_unavailable)
         }
@@ -91,8 +112,8 @@ class LocationService : AppCompatActivity() {
         val restaurantBtn : Button = findViewById(R.id.restaurantBtn)
         restaurantBtn.setOnClickListener {
             val intent = Intent(this, SpinTheWheel::class.java)
-            intent.putStringArrayListExtra("RESTAURANT_LIST", ArrayList(restaurantList))
-            intent.putExtra("LOCATION_GENERATED", true)
+            intent.putStringArrayListExtra("ITEMS_LIST", ArrayList(restaurantList))
+            intent.putExtra("USER_GENERATED", true)
             startActivity(intent)
         }
 
@@ -100,8 +121,8 @@ class LocationService : AppCompatActivity() {
         tourismBtn.setOnClickListener {
             if(tourismList.isNotEmpty()){
                 val intent = Intent(this, SpinTheWheel::class.java)
-                intent.putStringArrayListExtra("RESTAURANT_LIST", ArrayList(tourismList))
-                intent.putExtra("LOCATION_GENERATED", true)
+                intent.putStringArrayListExtra("ITEMS_LIST", ArrayList(tourismList))
+                intent.putExtra("USER_GENERATED", true)
                 startActivity(intent)
             } else {
 

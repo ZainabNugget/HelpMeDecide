@@ -1,23 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="ButtonStyle" parent="Widget.AppCompat.Button">
+    <style name="ButtonStyle">
+        <item name="android:fontFamily">@font/dragon_hunter</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:padding">10dp</item>
         <item name="android:textSize">16sp</item>
         <item name="android:textColor">@color/off_white</item>
-        <item name="android:backgroundTint">@color/dark_blue_custom</item>
+        <item name="android:backgroundTint">@color/brown</item>
     </style>
     <style name="TextViewStyle">
+        <item name="android:fontFamily">@font/dragon_hunter</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textSize">18sp</item>
-        <item name="android:textColor">@android:color/black</item>
+        <item name="android:textColor">@color/off_white</item>
         <item name="android:gravity">center</item>
     </style>
 <!--    <style name="Theme.HelpMeDecide" parent="android:Theme.Material.Light.NoActionBar" />-->
     <style name="Theme.HelpMeDecide" parent="Theme.AppCompat.Light.NoActionBar">
-        <!-- Customize as needed -->
+        <item name="android:fontFamily">@font/dragon_hunter</item>
     </style>
     <style name="Theme.LocationService" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
 </resources>

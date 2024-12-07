@@ -10,9 +10,11 @@ package com.griffith.helpmedecide
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
@@ -25,6 +27,10 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -44,45 +50,69 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+val ofF_white : Int = R.color.off_white
 
 class GenerateList : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val databaseManager = DatabaseManager(this)
+            val allData = databaseManager.getAllLists()
+            allData.forEach { Log.i("Database", it.toString()) }
+
+            val backGroundColor : Int = LocalContext.current.getColor(R.color.dark_blue_custom)
             //Will switch the intent to the spin the wheel activity
-            CreateList { list ->
-                val intent = Intent(this, SpinTheWheel::class.java)
-                intent.putStringArrayListExtra("ITEMS_LIST", ArrayList(list))
-                intent.putExtra("IS_USER_GENERATED", true)
-                startActivity(intent)
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState())
+                    .background(Color(backGroundColor))
+            ) {
+                CreateList(databaseManager) { list ->
+                    val intent = Intent(this@GenerateList, SpinTheWheel::class.java)
+                    intent.putStringArrayListExtra("ITEMS_LIST", ArrayList(list))
+                    intent.putExtra("IS_USER_GENERATED", true)
+                    startActivity(intent)
+                }
+                ShowPreviousLists(db = databaseManager)
             }
+
         }
     }
 }
 
 @Composable //Creating list composable, will include trextfeilds
-fun CreateList(onListComplete: (List<String>) -> Unit) {
+fun CreateList(db : DatabaseManager, onListComplete: (List<String>) -> Unit) {
     var numberOfItems by remember { mutableStateOf("") }//number of items within a list
     var itemsCount by remember { mutableIntStateOf(0) } //how many items
     val items = remember { mutableStateListOf<String>() } //items themselves
     var newItem by remember { mutableStateOf("") } //get the item from the textfeild
-
+    var listName by remember { mutableStateOf("") } //get the name of the list
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .padding(16.dp)
-            .imePadding()
-            .imeNestedScroll(),
     ) {
         //Title of the list activity
         Text(
             text = "Generate a list below!",
             modifier = Modifier.padding(vertical = 8.dp).align(Alignment.CenterHorizontally),
+            color = Color(ofF_white),
             style = MaterialTheme.typography.titleLarge
         )
         //Adding the items list size
+        TextField(
+            value = listName,
+            onValueChange = { input->
+                listName = input
+            },
+            label = { Text("Enter your list's name:" ) },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(8.dp))
         TextField(
             value = numberOfItems,
             onValueChange = { input ->
@@ -126,7 +156,10 @@ fun CreateList(onListComplete: (List<String>) -> Unit) {
         } else if (items.size == itemsCount && itemsCount > 0) {
             //if the limit was reached we can stop the adding and complete the list
             Button(
-                onClick = { onListComplete(items.toList()) },
+                onClick = {
+                    AddToDatabase(listName, items.toList(), db)
+                    onListComplete(items.toList())
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Complete List")
@@ -163,9 +196,72 @@ fun CreateList(onListComplete: (List<String>) -> Unit) {
     }
 }
 
+fun AddToDatabase(name : String, list : List<String>, db:DatabaseManager){
+    val list_to_string = list.joinToString(":")
+    Log.i("ListString", list_to_string)
+    db.addList(name, list_to_string) //add to database :3
+}
+
+
+@Composable
+fun ShowPreviousLists(db : DatabaseManager){
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        // Title Row
+        Text(
+            text = "Check out your previous lists:",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(ofF_white),
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(bottom = 8.dp) // Add spacing below the title
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Display the list of items
+        db.getAllLists().forEach { item ->
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp) // Add vertical spacing between items
+                    .background(
+                        color = Color(0xFFF1F1F1), // Light gray background for each list item
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .padding(12.dp) // Padding inside the background
+            ) {
+                Text(
+                    text = "List Name: ${item.first}",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.Black
+                )
+                Text(
+                    text = "Items: ${item.second}",
+                    fontSize = 12.sp,
+                    color = Color.DarkGray
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp)) // Add spacing between each list block
+        }
+    }
+
+}
 
 @Preview (showBackground = true)
 @Composable
-fun PreviewList(){
-    CreateList {  }
+fun PreviewLists(){
+    val db : DatabaseManager = DatabaseManager(LocalContext.current)
+    ShowPreviousLists(db)
 }
+
+//@Preview (showBackground = true)
+//@Composable
+//fun PreviewList(){
+//    CreateList {  }
+//}

@@ -1,56 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="match_parent"
+    android:layout_margin="2dp"
+    android:background="@color/dark_blue_custom">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@drawable/intro_background"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:layout_margin="5dp"
+        android:gravity="center">
+
+        <ImageView
+            android:id="@+id/introPic"
+            android:layout_width="256dp"
+            android:layout_height="286dp"
+            android:contentDescription="@string/title_activity_home_page"
+            app:srcCompat="@drawable/pentagon_intro"
+            android:rotation="-20"/>
 
         <Button
-            android:id="@+id/button"
-            android:layout_width="match_parent"
-            android:layout_height="98dp"
-            android:text="Welcome" />
+            android:id="@+id/introBtn"
+            android:layout_width="303dp"
+            android:layout_height="66dp"
+            android:fontFamily="@font/dragon_hunter"
+            android:text="@string/title_activity_main"
+            android:textSize="27sp"
+            android:textColor="@color/light"
+            android:layout_marginTop="-40dp"
+            android:elevation="10dp"
+            android:background="@drawable/round_corners_red_button" />
 
-        <View
-            android:id="@+id/divider3"
-            android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:background="?android:attr/listDivider" />
-
-        <Button
-            android:id="@+id/button2"
-            android:layout_width="match_parent"
-            android:layout_height="94dp"
-            android:text="Who should do it" />
-
-        <View
-            android:id="@+id/divider2"
-            android:layout_width="match_parent"
-            android:layout_height="85dp"
-            android:background="?android:attr/listDivider" />
-
-        <Button
-            android:id="@+id/button3"
-            android:layout_width="match_parent"
-            android:layout_height="101dp"
-            android:text="Choose a restaurant for me" />
-
-        <View
-            android:id="@+id/divider"
-            android:layout_width="match_parent"
-            android:layout_height="96dp"
-            android:background="?android:attr/listDivider" />
-
-        <Button
-            android:id="@+id/button4"
-            android:layout_width="match_parent"
-            android:layout_height="104dp"
-            android:text="Generate My Own" />
     </LinearLayout>
 </RelativeLayout>
