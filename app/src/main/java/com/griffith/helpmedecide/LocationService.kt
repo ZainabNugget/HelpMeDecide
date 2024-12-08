@@ -44,12 +44,6 @@ class LocationService : AppCompatActivity() {
 
     //this is api key for google places api
     private val apiKey = R.string.places_api_key
-    /*
-    * val intent = Intent(this, SpinTheWheel::class.java)
-                intent.putStringArrayListExtra("ITEMS_LIST", ArrayList(list))
-                intent.putExtra("IS_USER_GENERATED", true)
-                startActivity(intent)
-    * */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //refer to the res/xml/activity_location_services file, the design is all there

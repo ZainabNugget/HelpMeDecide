@@ -5,6 +5,7 @@ package com.griffith.helpmedecide
 * Student Number: 3088942
 * */
 
+import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -16,6 +17,8 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,6 +29,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.android.material.color.utilities.Score
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 
 private const val SHAKE_THRESHOLD = 25
 //to avoid excessive shaking :3
@@ -57,16 +63,44 @@ class RollTheDice : ComponentActivity(), SensorEventListener {
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         setContent {
             //our main component
-            DiceRollerScreen(
-                result = result.value,
-                isRolling = _isRolling.value,
-                showDialog = _showDialog.value,
-                onRoll = this::onRollCurrentPlayer,
-                onDialogDismiss = { _showDialog.value = false }
+            val customTypography = Typography(
+                titleLarge = MaterialTheme.typography.titleLarge.copy(fontFamily = CustomFontFamily),
+                bodyLarge = MaterialTheme.typography.bodyLarge.copy(fontFamily = CustomFontFamily),
             )
-            ScoreBoard(Data)
-        }
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+                bottomBar = {
+                    BottomAppBar(
+                        containerColor = Color(LocalContext.current.getColor(R.color.gold)),
+                        contentColor = Color(LocalContext.current.getColor(R.color.off_white))
+                    ) {
+                        IconButton(onClick = {
+                            val intent = Intent(this@RollTheDice, HomePage::class.java)
+                            startActivity(intent)
+                        }) {
+                            Icon(imageVector = Icons.Default.Home, contentDescription = "Home")
+                        }
+                    }
+                },
+                content = { paddingValues ->
+                    Column(
+                        modifier = Modifier.padding(paddingValues)
+                    ) {
+                        MaterialTheme (typography = customTypography) {
+                            DiceRollerScreen (
+                                result = result.value,
+                                isRolling = _isRolling.value,
+                                showDialog = _showDialog.value,
+                                onRoll = { onRollCurrentPlayer() },
+                                onDialogDismiss = { _showDialog.value = false }
+                            )
+                            ScoreBoard(Data)
+                        }
+                    }
+                }
+            )
 
+        }
     }
 
     fun nextPlayer(){
@@ -235,7 +269,8 @@ fun ScoreBoard(Data : List<Scores>){
     Column {
         Text("ScoreBoard")
         LazyRow(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .padding(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
