@@ -15,6 +15,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.icons.Icons
@@ -32,6 +33,18 @@ import com.google.android.material.color.utilities.Score
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.sp
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 
 private const val SHAKE_THRESHOLD = 25
 //to avoid excessive shaking :3
@@ -87,13 +100,14 @@ class RollTheDice : ComponentActivity(), SensorEventListener {
                         modifier = Modifier.padding(paddingValues)
                     ) {
                         MaterialTheme (typography = customTypography) {
-                            DiceRollerScreen (
-                                result = result.value,
-                                isRolling = _isRolling.value,
-                                showDialog = _showDialog.value,
-                                onRoll = { onRollCurrentPlayer() },
-                                onDialogDismiss = { _showDialog.value = false }
-                            )
+                            DiceRoller()
+//                            DiceRollerScreen (
+//                                result = result.value,
+//                                isRolling = _isRolling.value,
+//                                showDialog = _showDialog.value,
+//                                onRoll = { onRollCurrentPlayer() },
+//                                onDialogDismiss = { _showDialog.value = false }
+//                            )
                             ScoreBoard(Data)
                         }
                     }
@@ -101,10 +115,6 @@ class RollTheDice : ComponentActivity(), SensorEventListener {
             )
 
         }
-    }
-
-    fun nextPlayer(){
-        currentPlayer++ //increrment player
     }
 
     fun updateScores(index : Int, result : Int){ //replace
@@ -296,14 +306,104 @@ fun ScoreCard(score : Scores){
     }
 }
 
+@Composable
+fun DiceRoller() {
+    var diceNumber by remember { mutableStateOf(1) }
+    var isRolling by remember { mutableStateOf(false) }
+    val rotation = remember { Animatable(0f) }
+    var finishedRolling by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(LocalContext.current.getColor(R.color.dark_blue_custom))),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Box(
+                modifier = Modifier.size(150.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.dicetwenty),
+                    contentDescription = "Dice",
+                    modifier = Modifier
+                        .size(150.dp)
+                        .graphicsLayer(rotationZ = rotation.value)
+                )
+                if(!finishedRolling){
+                    Text(
+                        text = "...",
+                        modifier = Modifier.align(Alignment.Center),
+                        color = Color(LocalContext.current.getColor(R.color.dark_blue_custom))
+                    )
+                } else {
+                    Text(
+                        text = diceNumber.toString(),
+                        modifier = Modifier.align(Alignment.Center),
+                        color = Color(LocalContext.current.getColor(R.color.dark_blue_custom))
+                    )
+                }
+
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Roll button
+            Button(
+                onClick = {
+                    isRolling = true
+                    finishedRolling = false
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(LocalContext.current.getColor(R.color.gold)),
+                    contentColor = Color(LocalContext.current.getColor(R.color.off_white))
+                ),
+                enabled = !isRolling // Disable button during roll
+            ) {
+                Text("Roll Dice")
+            }
+        }
+    }
+
+    // LaunchedEffect to animate and update the dice number
+    LaunchedEffect(isRolling) {
+        if (isRolling) {
+            // Perform the rolling animation
+            rotation.animateTo(
+                targetValue = 720f, // Rotate 720 degrees
+                animationSpec = tween(
+                    durationMillis = 1000,
+                    easing = FastOutSlowInEasing
+                )
+            )
+            rotation.snapTo(0f) // Reset rotation
+            diceNumber = (1..20).random()
+            isRolling = false
+            finishedRolling = true
+        }
+    }
+}
+
 
 @Preview(showBackground = true)
 @Composable
-fun PreviewScoreBoard() {
+fun PreviewDiceRoll() {
     MaterialTheme {
-        ScoreBoard(Data)
+        DiceRoller()
     }
 }
+
+//@Preview(showBackground = true)
+//@Composable
+//fun PreviewScoreBoard() {
+//    MaterialTheme {
+//        ScoreBoard(Data)
+//    }
+//}
 
 //@Preview(showBackground = true)
 //@Composable
