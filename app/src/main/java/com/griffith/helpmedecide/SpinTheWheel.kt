@@ -326,7 +326,7 @@ fun ShowPopupDialog(item: String, onDismiss: () -> Unit) {
         textContentColor = Color(LocalContext.current.getColor(R.color.off_white)),
         titleContentColor = Color(LocalContext.current.getColor(R.color.off_white)),
         title = { Text(item, textAlign = TextAlign.Center,fontSize = 20.sp, style = TextStyle(fontFamily = dragonHunterFont)) },
-//        text = { Text("The wheel stopped on: $item", style = TextStyle(fontFamily = dragonHunterFont)) },
+        text = { Text("Fate has chosen: $item", style = TextStyle(fontFamily = dragonHunterFont)) },
         confirmButton = {
             Row{
                 Button(

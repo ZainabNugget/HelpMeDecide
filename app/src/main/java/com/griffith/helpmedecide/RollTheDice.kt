@@ -5,6 +5,7 @@ package com.griffith.helpmedecide
 * Student Number: 3088942
 * */
 
+import android.content.Context
 import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -34,16 +35,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import kotlin.random.Random
 
 private const val SHAKE_THRESHOLD = 15//to avoid excessive shaking
 private const val Cooldown = 200L
@@ -129,9 +134,10 @@ class RollTheDice : ComponentActivity(), SensorEventListener {
                         Column(
                             modifier = Modifier.fillMaxSize()
                                 .padding(paddingValues)
-                                .background(Color(LocalContext.current.getColor(R.color.light_gold)))
+                                .background(Color(LocalContext.current.getColor(brown)))
+                                .padding(16.dp)
                         ){
-                            NavigationScreen(isRolling, diceNumber, db)
+                            NavigationScreen(isRolling, diceNumber, db, this@RollTheDice)
                         }
                     }
                 )
@@ -189,7 +195,7 @@ class RollTheDice : ComponentActivity(), SensorEventListener {
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 }
 @Composable
-fun NavigationScreen(isRolling: MutableState<Boolean>, diceNumber: MutableState<Int>, db: DatabaseManager){
+fun NavigationScreen(isRolling: MutableState<Boolean>, diceNumber: MutableState<Int>, db: DatabaseManager, context: Context){
     val navController = rememberNavController()
     Surface (
         modifier = Modifier.fillMaxWidth()
@@ -199,7 +205,7 @@ fun NavigationScreen(isRolling: MutableState<Boolean>, diceNumber: MutableState<
             startDestination = "List"
         ){
             composable("List"){
-                CreatePeopleList(navController, db)
+                CreatePeopleList(navController, db, context)
             }
             composable("RollDice"){
                 DiceRoller(isRolling, diceNumber, navController)
@@ -295,35 +301,137 @@ fun DiceRoller(isRolling: MutableState<Boolean>, diceNumber: MutableState<Int>, 
                     Text("OK", style = TextStyle(fontFamily = dragonHunterFont))
                 }
             },
-            title = { Text("Dice Roll Result", style = TextStyle(fontFamily = dragonHunterFont)) },
-            text = { Text("You rolled a ${diceNumber.value}!", style = TextStyle(fontFamily = dragonHunterFont)) }
+            text = { Text("You rolled a ${diceNumber.value}!", fontSize = 20.sp, style = TextStyle(fontFamily = dragonHunterFont)) }
         )
     }
 }
 @Composable
-fun CreatePeopleList(navController: NavController, db: DatabaseManager){
-    Column(
-        modifier = Modifier.fillMaxSize()
-            .background(Color(LocalContext.current.getColor(dark_blue)))
-    ) {
-        Text(
-            "Make a list of people who are playing, then click play!",
-            modifier = Modifier
-                .padding(2.dp)
-                .align(Alignment.CenterHorizontally),
-            color = Color(LocalContext.current.getColor(ofF_white)),
-            style = MaterialTheme.typography.bodyLarge
-        )
-        PeopleListScreen(navController, db)
+fun CreatePeopleList(navController: NavController, db: DatabaseManager, context: Context){
+    Row (
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .background(Color(LocalContext.current.getColor(R.color.brown))),
+        horizontalArrangement = Arrangement.Center
+    ){
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text(
+                "Make a list of people who are playing, then click play!",
+                modifier = Modifier
+                    .padding(2.dp),
+                textAlign = TextAlign.Center,
+                color = Color(LocalContext.current.getColor(ofF_white)),
+                style = MaterialTheme.typography.bodyLarge
+            )
+            PeopleListScreen(navController, db)
+            Spacer(modifier = Modifier.height(10.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .background(Color(LocalContext.current.getColor(R.color.dark_blue_custom)))
+                    .border(
+                        border = BorderStroke(
+                            2.dp,
+                            Color(LocalContext.current.getColor(R.color.gold))
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    ),
+                verticalArrangement = Arrangement.Center
+            ){
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ){
+                    Text(text = "If you want to skip making a list ->",
+                        textAlign = TextAlign.Center,
+                        color = Color(LocalContext.current.getColor(ofF_white)))
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Button(
+                        modifier = Modifier.border(
+                            border = BorderStroke(
+                                2.dp,
+                                Color(LocalContext.current.getColor(R.color.dark_blue_custom))
+                            ),
+                            shape = RoundedCornerShape(16.dp)
+                        ),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(LocalContext.current.getColor(R.color.gold)),
+                            contentColor = Color(LocalContext.current.getColor(R.color.off_white))
+                        ),
+                        onClick = {
+                            navController.navigate("RollDice")
+                        }
+                    ) {
+                        Text(text = "Take me to the dice", style = TextStyle(fontFamily = dragonHunterFont))
+                    }
+                }
+
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(LocalContext.current.getColor(R.color.dark_blue_custom)))
+                    .border(
+                        border = BorderStroke(
+                            2.dp,
+                            Color(LocalContext.current.getColor(R.color.gold))
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    ),
+                verticalArrangement = Arrangement.Center
+            ){
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(
+                            border = BorderStroke(
+                                2.dp,
+                                Color(LocalContext.current.getColor(brown))
+                            ),
+                            shape = RoundedCornerShape(16.dp)
+                        ),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    ShowPreviousLists(db = db, "Dice") { list ->
+                        peopleList = list
+                        navController.navigate("RollDice")
+                        size = list.size
+                    }
+                }
+            }
+        }
     }
 }
 @Composable
 fun PeopleListScreen(navController: NavController, db:DatabaseManager) {
-    CreateList("Dice","Person", db) {
-        list ->
-        peopleList = list
-        navController.navigate("RollDice")
-        size = list.size
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                border = BorderStroke(
+                    2.dp,
+                    Color(LocalContext.current.getColor(R.color.gold))
+                ),
+                shape = RoundedCornerShape(16.dp)
+            ),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        CreateList("Dice", "Person", db) { list ->
+            peopleList = list
+            navController.navigate("RollDice")
+            size = list.size
+        }
     }
 }
 @Composable

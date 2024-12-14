@@ -144,34 +144,46 @@ class GenerateList : ComponentActivity() {
                             .verticalScroll(rememberScrollState())
                             .background(Color(LocalContext.current.getColor(brown)))
                             .padding(paddingValues)
-                            .border(
-                                border = BorderStroke(
-                                    2.dp,
-                                    Color(LocalContext.current.getColor(brown))
-                                ),
-                                shape = RoundedCornerShape(16.dp)
-                            )
                             .padding(16.dp)
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            CreateList("Wheel","Items",databaseManager) { list ->
-                                val intent = Intent(this@GenerateList, SpinTheWheel::class.java)
-                                intent.putStringArrayListExtra("ITEMS_LIST", ArrayList(list))
-                                intent.putExtra("IS_USER_GENERATED", true)
-                                startActivity(intent)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .border(
+                                        border = BorderStroke(
+                                            2.dp,
+                                            Color(LocalContext.current.getColor(R.color.gold))
+                                        ),
+                                        shape = RoundedCornerShape(16.dp)
+                                    ),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                CreateList("Wheel","Items",databaseManager) { list ->
+                                    val intent = Intent(this@GenerateList, SpinTheWheel::class.java)
+                                    intent.putStringArrayListExtra("ITEMS_LIST", ArrayList(list))
+                                    intent.putExtra("IS_USER_GENERATED", true)
+                                    startActivity(intent)
+                                }
                             }
-                        }
+                          Spacer(modifier = Modifier.height(10.dp))
                           Row(
                               modifier = Modifier
                                   .fillMaxWidth()
-                                  .align(Alignment.CenterHorizontally),
+                                  .border(
+                                      border = BorderStroke(
+                                          2.dp,
+                                          Color(LocalContext.current.getColor(brown))
+                                      ),
+                                      shape = RoundedCornerShape(16.dp)
+                                  ),
                               horizontalArrangement = Arrangement.Center
                           ) {
-                              ExpandableCardList(this@GenerateList, databaseManager)
+                              ShowPreviousLists(db = databaseManager, "Wheel") { list ->
+                                  val intent = Intent(this@GenerateList, SpinTheWheel::class.java)
+                                  intent.putStringArrayListExtra("ITEMS_LIST", ArrayList(list))
+                                  intent.putExtra("IS_USER_GENERATED", true)
+                                  startActivity(intent)
+                              }
                           }
                     }
                   }
@@ -192,7 +204,6 @@ fun CreateList(tag: String, string : String, db : DatabaseManager, onListComplet
         modifier = Modifier
             .fillMaxWidth()
             .background(Color(LocalContext.current.getColor(dark_blue)))
-            .border(2.dp, Color(LocalContext.current.getColor(R.color.gold)))
     ) {
         TextField(
             value = listName,
@@ -328,13 +339,32 @@ fun addToDatabase(tag: String, name : String, list : List<String>, db:DatabaseMa
 }
 
 @Composable
-fun ShowPreviousLists(db : DatabaseManager, onListComplete: (List<String>) -> Unit){
+fun ShowPreviousLists(db : DatabaseManager, type : String, onListComplete: (List<String>) -> Unit){
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(9.dp)
+            .background(Color(LocalContext.current.getColor(dark_blue)))
+            .padding(5.dp)
+            .border(
+                border = BorderStroke(
+                    2.dp,
+                    Color(LocalContext.current.getColor(brown))
+                ),
+                shape = RoundedCornerShape(16.dp)
+            )
     ) {
-        db.getAllLists("Wheel").asReversed().forEach { item ->
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            "Previous Lists:",
+            fontSize = 20.sp,
+            modifier = Modifier
+                .padding(2.dp)
+                .align(Alignment.CenterHorizontally),
+            color = Color(LocalContext.current.getColor(ofF_white)),
+            style = MaterialTheme.typography.bodyLarge
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        db.getAllLists(type).asReversed().forEach { item ->
 
             Row(
                 modifier = Modifier
@@ -342,33 +372,25 @@ fun ShowPreviousLists(db : DatabaseManager, onListComplete: (List<String>) -> Un
                     .background(
                         color = Color(LocalContext.current.getColor(R.color.gold)),
                         shape = RoundedCornerShape(8.dp)
-                    ),
+                    )
+                    .padding(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(
                     modifier = Modifier.weight(1f)
                 )  {
                     Text(
-                        text = "List Name: ${item.first}",
+                        text = "${item.first}' List:",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color(LocalContext.current.getColor(R.color.off_white))
                     )
                     Text(
-                        text = "Items:",
+                        text = "Items: ${item.second}",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color(LocalContext.current.getColor(R.color.off_white))
                     )
-                    item.second.split(":").toList().forEach {
-                        sec ->
-                        Text(
-                            text = sec,
-                            fontSize = 12.sp,
-                            color = Color(LocalContext.current.getColor(R.color.off_white))
-                        )
-                    }
-
                 }
                 //Align to the end (the right)
                 Column(
@@ -386,8 +408,15 @@ fun ShowPreviousLists(db : DatabaseManager, onListComplete: (List<String>) -> Un
                         modifier = Modifier
                             .padding(start = 8.dp)
                             .size(40.dp)
+                            .border(
+                                border = BorderStroke(
+                                    2.dp,
+                                    Color(LocalContext.current.getColor(dark_blue))
+                                ),
+                                shape = RoundedCornerShape(25.dp)
+                            )
                     ) {
-                        Text("X")
+                        Text("->", color = Color(LocalContext.current.getColor(R.color.off_white)))
                     }
                 }
 
@@ -396,63 +425,6 @@ fun ShowPreviousLists(db : DatabaseManager, onListComplete: (List<String>) -> Un
         }
     }
 
-}
-
-@Composable
-fun ExpandableCard(title: String, context : Context, db: DatabaseManager) {
-    //to track the expansion
-    var isExpanded by remember { mutableStateOf(false) }
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(10.dp)
-            .border(
-                border = BorderStroke(
-                    2.dp,
-                    Color(LocalContext.current.getColor(R.color.gold))
-                )
-            )
-            .clickable { isExpanded = !isExpanded },
-        colors = CardDefaults.cardColors(
-            containerColor =Color(LocalContext.current.getColor(dark_blue)),
-            contentColor = Color(LocalContext.current.getColor(ofF_white))
-        ),
-        shape = RoundedCornerShape(8.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp)
-        ) {
-            Text(
-                text = title,
-                fontSize = 18.sp
-            )
-//            AnimatedVisibility(
-//                visible = isExpanded,
-//                enter = expandVertically(), //Animation for expanding
-//                exit = shrinkVertically() //Animation for collapse
-//            ) {
-                ShowPreviousLists(db = db) { list ->
-                    val intent = Intent(context, SpinTheWheel::class.java)
-                    intent.putStringArrayListExtra("ITEMS_LIST", ArrayList(list))
-                    intent.putExtra("IS_USER_GENERATED", true)
-                    context.startActivity(intent)
-                }
-//            }
-        }
-    }
-}
-
-@Composable
-fun ExpandableCardList(context: Context, db : DatabaseManager) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        ExpandableCard(
-            title = "Check out your previous lists",
-            context = context,
-            db = db
-        )
-    }
 }
 
 //@Preview (showBackground = true)
