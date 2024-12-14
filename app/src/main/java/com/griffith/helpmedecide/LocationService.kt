@@ -15,6 +15,7 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.ActivityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -33,6 +34,7 @@ import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.libraries.places.api.net.SearchNearbyRequest
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class LocationService : AppCompatActivity() {
     //helps get the location
@@ -41,7 +43,6 @@ class LocationService : AppCompatActivity() {
     private lateinit var placesClient: PlacesClient
     private val restaurantList = mutableListOf<String>()
     private val tourismList = mutableListOf<String>()
-
     //this is api key for google places api
     private val apiKey = R.string.places_api_key
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,6 +54,23 @@ class LocationService : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        //set up the bottom bar navigation system
+        val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation_view)
+        bottomNavigationView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> { //go to homepage!
+                    val intent = Intent(this@LocationService, HomePage::class.java)
+                    startActivity(intent)
+                    true
+                }
+                R.id.nav_settings -> {
+                    Log.i("Settings Clicked", "!!")
+                    true
+                }
+                else -> false
+            }
+        }
+
         //init places
         if (!Places.isInitialized()) {
             Places.initialize(applicationContext, getString(apiKey))
@@ -74,11 +92,12 @@ class LocationService : AppCompatActivity() {
             fusedLocationClient.getCurrentLocation(priority, cancellationTokenSource.token)
                 .addOnSuccessListener { location ->
                     if (location != null) {
+                        Log.i("Current Location", "$location")
                         val center = LatLng(location.latitude, location.longitude)
                         val search_radius = CircularBounds.newInstance(center, 1000.0)
-                        locationTextView.text = "Latitude: ${location.latitude}, Longitude: ${location.longitude}"
                         getNearbyRestaurants(location.latitude, location.longitude, restaurantList, listOf("restaurant"))
                         getNearbyRestaurants(location.latitude, location.longitude, tourismList, listOf("tourist_attraction"))
+                        locationTextView.text = findPlaceName(location.latitude, location.longitude)
                     } else { //if location unavailable
                         locationTextView.setText(R.string.location_info)
                     }
@@ -87,18 +106,6 @@ class LocationService : AppCompatActivity() {
                 .addOnFailureListener { exception ->
                     Log.d("Location", "Oops location failed with exception: $exception")
                 }
-//            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-//                if (location != null) {
-//                    val center = LatLng(location.latitude, location.longitude)
-//                    val search_radius = CircularBounds.newInstance(center, 1000.0)
-//                    locationTextView.text = "Latitude: ${location.latitude}, Longitude: ${location.longitude}"
-//                    getNearbyRestaurants(location.latitude, location.longitude, restaurantList, listOf("restaurant"))
-//                    getNearbyRestaurants(location.latitude, location.longitude, tourismList, listOf("tourist_attraction"))
-//
-//                } else { //if location unavailable
-//                    locationTextView.setText(R.string.location_info)
-//                }
-//            }
         } else { //If we don't have permission to access location!
             locationTextView.setText(R.string.location_unavailable)
         }
@@ -166,6 +173,45 @@ class LocationService : AppCompatActivity() {
                 Log.e("NearbyRestaurants", "Error fetching places: ${exception.message}")
             }
 
+    }
+
+    private fun findPlaceName(lat: Double, lon: Double) : String {
+        // Define the fields to retrieve
+        val placeFields = listOf(
+            Place.Field.NAME,
+            Place.Field.ADDRESS
+        )
+
+        // Create a request for the current place
+        val request = FindCurrentPlaceRequest.newInstance(placeFields)
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // Handle case where permission is not granted
+            Log.e("Place result", "Location permission not granted")
+        }
+        // Call findCurrentPlace
+        val placeResult: Task<FindCurrentPlaceResponse> =
+            placesClient.findCurrentPlace(request)
+        var name = ""
+        placeResult.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val response = task.result
+                for (placeLikelihood in response.placeLikelihoods) {
+                    val place = placeLikelihood.place
+                    val locationTextView = findViewById<TextView>(R.id.location)
+                    locationTextView.text = place.name
+                    name = place.name?.toString() ?: "Getting location..."
+                    Log.d("Place", "Place name: ${place.name}")
+                    break
+                }
+            } else {
+                name = R.string.location_info.toString()
+            }
+        }
+        return name
     }
 
 }

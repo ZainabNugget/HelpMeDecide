@@ -11,13 +11,13 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
@@ -26,156 +26,144 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.google.android.material.color.utilities.Score
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.sp
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 
-private const val SHAKE_THRESHOLD = 25
-//to avoid excessive shaking :3
+private const val SHAKE_THRESHOLD = 15//to avoid excessive shaking
 private const val Cooldown = 200L
+var peopleList : List<String>?= null
+var index = 0
+var size = 0
 
 class RollTheDice : ComponentActivity(), SensorEventListener {
     private var sensorManager: SensorManager? = null
-    //For drawinf the dice
-    private val _result = mutableStateOf(1)
-    private val _isRolling = mutableStateOf(false)
-    private val _showDialog = mutableStateOf(false)
-    private val result: State<Int> get() = _result
-    //acceleration/seeing if we exceed threshold
+    private val isRolling = mutableStateOf(false)
+    private val diceNumber = mutableStateOf(1)
     private var last_x = 0f
     private var last_y = 0f
     private var last_z = 0f
     //to calculate time difference
     var lastUpdatedTime : Long = 0
     var timeDifference : Long = 0
+    var numberOfPeople = 0
 
-    private var currentPlayer = 0;
-
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //sensro manager to get the data
-
-        val size = Data.size
 
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+
         setContent {
-            //our main component
+            val db = DatabaseManager(this)
             val customTypography = Typography(
                 titleLarge = MaterialTheme.typography.titleLarge.copy(fontFamily = CustomFontFamily),
                 bodyLarge = MaterialTheme.typography.bodyLarge.copy(fontFamily = CustomFontFamily),
             )
-            Scaffold(
-                modifier = Modifier.fillMaxSize(),
-                bottomBar = {
-                    BottomAppBar(
-                        containerColor = Color(LocalContext.current.getColor(R.color.gold)),
-                        contentColor = Color(LocalContext.current.getColor(R.color.off_white))
-                    ) {
-                        IconButton(onClick = {
-                            val intent = Intent(this@RollTheDice, HomePage::class.java)
-                            startActivity(intent)
-                        }) {
-                            Icon(imageVector = Icons.Default.Home, contentDescription = "Home")
+            MaterialTheme (typography = customTypography) {
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    topBar = {
+                        TopAppBar(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TopAppBarDefaults.topAppBarColors(
+                                containerColor = Color(LocalContext.current.getColor(R.color.dark_blue_custom)),
+                                titleContentColor = Color(LocalContext.current.getColor(ofF_white)),
+                            ),
+                            title = {
+                                Box(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Text(
+                                        text = "ROLL THE DICE!",
+                                        modifier = Modifier
+                                            .padding(vertical = 8.dp),
+                                        color = Color(LocalContext.current.getColor(R.color.off_white)),
+                                        style = MaterialTheme.typography.titleLarge
+                                    )
+                                }
+                            }
+                        )
+                    },
+                    bottomBar = {
+                        BottomAppBar(
+                            modifier = Modifier.fillMaxWidth(),
+                            containerColor = Color(LocalContext.current.getColor(R.color.light_gold)),
+                            contentColor = Color(LocalContext.current.getColor(R.color.off_white))
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ){
+                                IconButton(onClick = {
+                                    val intent = Intent(this@RollTheDice, HomePage::class.java)
+                                    startActivity(intent)
+                                }) {
+                                    Column (
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Icon(imageVector = Icons.Default.Home, contentDescription = "Home")
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    content = { paddingValues ->
+                        Column(
+                            modifier = Modifier.fillMaxSize()
+                                .padding(paddingValues)
+                                .background(Color(LocalContext.current.getColor(R.color.light_gold)))
+                        ){
+                            NavigationScreen(isRolling, diceNumber, db)
                         }
                     }
-                },
-                content = { paddingValues ->
-                    Column(
-                        modifier = Modifier.padding(paddingValues)
-                    ) {
-                        MaterialTheme (typography = customTypography) {
-                            DiceRoller()
-//                            DiceRollerScreen (
-//                                result = result.value,
-//                                isRolling = _isRolling.value,
-//                                showDialog = _showDialog.value,
-//                                onRoll = { onRollCurrentPlayer() },
-//                                onDialogDismiss = { _showDialog.value = false }
-//                            )
-                            ScoreBoard(Data)
-                        }
-                    }
-                }
-            )
+                )
 
+            }
         }
-    }
-
-    fun updateScores(index : Int, result : Int){ //replace
-        val updatedList = Data.toMutableList()
-        val name = Data[index].name
-        val prev = Data[index].score
-        updatedList[index] = Scores(name, prev + result)
-        Data.clear()
-        Data.addAll(updatedList)
-    }
-
-    fun onRollCurrentPlayer(){
-        if (currentPlayer >= Data.size) return
-        val currentTime = System.currentTimeMillis()
-        if (currentTime - lastUpdatedTime > Cooldown) {
-            val roll = (1..6).random()
-            _result.value = roll
-            updateScores(currentPlayer, roll)
-        }
-    }
-
-    override fun onPause() {
-        //when the device isnt moving
-        super.onPause()
-        sensorManager?.unregisterListener(this)
-    }
-
-    override fun onResume() {
-        //when they sense a change
-        super.onResume()
-        sensorManager?.registerListener(
-            this,
-            //we're using TYPE acceleeromete
-            sensorManager!!.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-            SensorManager.SENSOR_DELAY_NORMAL)
     }
 
     private fun onRoll() {
-        //called whenevber the system detects shaking
-        val currentTime = System.currentTimeMillis()
-        if(currentTime - lastUpdatedTime > Cooldown){
-            //randomsises from 1 to 6
-            _result.value = (1..6).random()
+        if (!isRolling.value) {
+            isRolling.value = true
+            diceNumber.value = (1..20).random()
         }
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
-        if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER && !_isRolling.value) {
+        if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
             val x = event.values[0]
             val y = event.values[1]
             val z = event.values[2]
 
             val currentTime = System.currentTimeMillis()
-            if(currentTime - lastUpdatedTime > Cooldown){
-                timeDifference = currentTime - lastUpdatedTime
-                val currentAcceleration = Math.abs(x+y+z - last_x+last_y+last_z/timeDifference * 1000)
-                if(currentAcceleration > SHAKE_THRESHOLD){
+            if (currentTime - lastUpdatedTime > Cooldown) {
+                val deltaTime = currentTime - lastUpdatedTime
+                val acceleration = Math.abs(x + y + z - last_x - last_y - last_z) / deltaTime * 1000
+
+                if (acceleration > SHAKE_THRESHOLD) {
+                    Log.i("Shake", "Shake threshold reached!")
                     onRoll()
-//                    _showDialog.value = true
+
                 }
-                //update values after sensor shakes
+
                 lastUpdatedTime = currentTime
                 last_x = x
                 last_y = y
@@ -184,145 +172,59 @@ class RollTheDice : ComponentActivity(), SensorEventListener {
         }
     }
 
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // TODO()
+    override fun onPause() {
+        super.onPause()
+        sensorManager?.unregisterListener(this)
     }
-}
 
-@Composable
-fun DiceRollerScreen(
-    result: Int,
-    isRolling: Boolean,
-    showDialog : Boolean,
-    onRoll: () -> Unit,
-    onDialogDismiss: () -> Unit
-) {
-    //for potential animation
-    val rotation = remember { Animatable(0f) }
-    val scale = remember { Animatable(1f) }
-    //using images i drew
-    val imageResource = when (result) {
-        1 -> R.drawable.dice_1
-        2 -> R.drawable.dice_2
-        3 -> R.drawable.dice_3
-        4 -> R.drawable.dice_4
-        5 -> R.drawable.dice_5
-        else -> R.drawable.dice_6
-    }
-    //will implement firther, shows alot of errors
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { onDialogDismiss() },
-            confirmButton = {
-                TextButton(onClick = { onDialogDismiss() }) {
-                    Text("OK")
-                }
-            },
-            title = { Text("Shake Detected") },
-            text = { Text("The dice rolled: $result") }
+    override fun onResume() {
+        super.onResume()
+        sensorManager?.registerListener(
+            this,
+            sensorManager!!.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+            SensorManager.SENSOR_DELAY_NORMAL
         )
     }
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Box(
-            modifier = Modifier.graphicsLayer(
-                rotationZ = rotation.value,
-                scaleX = scale.value,
-                scaleY = scale.value
-            )
-        ) {
-            Image(
-                //paint the dice
-                painter = painterResource(imageResource),
-                contentDescription = "Dice showing $result"
-            )
-        }
 
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Button(
-            onClick = {
-                onRoll()
-            },
-            enabled = !isRolling
-        ) {
-            Text(if (isRolling) "Rolling..." else stringResource(R.string.roll))
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
-        //resulting dice
-        Text("Your rolled dice: $result")
-    }
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 }
-
-data class Scores(
-    val name: String,
-    val score: Int
-)
-
-val Data = mutableStateListOf(
-    Scores("Alice", 0),
-    Scores("Eric", 0),
-    Scores("Alice", 0),
-    Scores("Eric", 0),
-    Scores("Alice", 0),
-    Scores("Eric", 0)
-)
-
 @Composable
-fun ScoreBoard(Data : List<Scores>){
-    //horizontal scroll, based on the amount of people in the list
-    //for loop that goes throught the peaople and creates
-    Column {
-        Text("ScoreBoard")
-        LazyRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(Data.size) { //loop through the people
-                index -> ScoreCard(Data[index])
+fun NavigationScreen(isRolling: MutableState<Boolean>, diceNumber: MutableState<Int>, db: DatabaseManager){
+    val navController = rememberNavController()
+    Surface (
+        modifier = Modifier.fillMaxWidth()
+    ){
+        NavHost(
+            navController = navController,
+            startDestination = "List"
+        ){
+            composable("List"){
+                CreatePeopleList(navController, db)
+            }
+            composable("RollDice"){
+                DiceRoller(isRolling, diceNumber, navController)
             }
         }
     }
 }
-
 @Composable
-fun ScoreCard(score : Scores){
-    Card (
-        modifier = Modifier.size(width = 80.dp, height = 80.dp)
-    ){
-        Column (
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ){
-            Text(text=score.name)
-            Text(text ="${score.score}")
-        }
-    }
-}
-
-@Composable
-fun DiceRoller() {
-    var diceNumber by remember { mutableStateOf(1) }
-    var isRolling by remember { mutableStateOf(false) }
+fun DiceRoller(isRolling: MutableState<Boolean>, diceNumber: MutableState<Int>, navController: NavController) {
     val rotation = remember { Animatable(0f) }
-    var finishedRolling by remember { mutableStateOf(false) }
-
+    val showDialog = remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(LocalContext.current.getColor(R.color.dark_blue_custom))),
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            val players = remember {
+                peopleList?.map { name -> name to 0 }?.let { mutableStateListOf(*it.toTypedArray()) }
+            }
+            Log.i("playerLsit", peopleList.toString())
+            if (players != null) {
+                ScoreBoard(players = players)
+            }
             Box(
                 modifier = Modifier.size(150.dp),
                 contentAlignment = Alignment.Center
@@ -334,81 +236,140 @@ fun DiceRoller() {
                         .size(150.dp)
                         .graphicsLayer(rotationZ = rotation.value)
                 )
-                if(!finishedRolling){
-                    Text(
-                        text = "...",
-                        modifier = Modifier.align(Alignment.Center),
-                        color = Color(LocalContext.current.getColor(R.color.dark_blue_custom))
-                    )
-                } else {
-                    Text(
-                        text = diceNumber.toString(),
-                        modifier = Modifier.align(Alignment.Center),
-                        color = Color(LocalContext.current.getColor(R.color.dark_blue_custom))
-                    )
-                }
-
+                Text(
+                    text = if (isRolling.value) "..." else diceNumber.value.toString(),
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color(LocalContext.current.getColor(R.color.dark_blue_custom))
+                )
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Roll button
             Button(
                 onClick = {
-                    isRolling = true
-                    finishedRolling = false
+                    if (!isRolling.value) {
+                        isRolling.value = true
+                        diceNumber.value = (1..20).random()
+                    }
                 },
+                enabled = !isRolling.value,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(LocalContext.current.getColor(R.color.gold)),
                     contentColor = Color(LocalContext.current.getColor(R.color.off_white))
-                ),
-                enabled = !isRolling // Disable button during roll
+                )
             ) {
                 Text("Roll Dice")
             }
         }
     }
 
-    // LaunchedEffect to animate and update the dice number
-    LaunchedEffect(isRolling) {
-        if (isRolling) {
-            // Perform the rolling animation
+    LaunchedEffect(isRolling.value) {
+        if (isRolling.value) {
+            //Animate the dice roll
             rotation.animateTo(
-                targetValue = 720f, // Rotate 720 degrees
+                targetValue = 720f,
                 animationSpec = tween(
                     durationMillis = 1000,
                     easing = FastOutSlowInEasing
                 )
             )
-            rotation.snapTo(0f) // Reset rotation
-            diceNumber = (1..20).random()
-            isRolling = false
-            finishedRolling = true
+            rotation.snapTo(0f)
+            isRolling.value = false // Stop rolling
+            showDialog.value = true
+        }
+    }
+    if (showDialog.value) {
+        AlertDialog(
+            onDismissRequest = { showDialog.value = false },
+            containerColor = Color(LocalContext.current.getColor(R.color.gold)),
+            textContentColor = Color(LocalContext.current.getColor(R.color.off_white)),
+            titleContentColor = Color(LocalContext.current.getColor(R.color.off_white)),
+            confirmButton = {
+                Button(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(LocalContext.current.getColor(R.color.dark_blue_custom)),
+                        contentColor = Color(LocalContext.current.getColor(R.color.off_white))
+                    ),
+                    onClick = { showDialog.value = false }
+                ) {
+                    Text("OK", style = TextStyle(fontFamily = dragonHunterFont))
+                }
+            },
+            title = { Text("Dice Roll Result", style = TextStyle(fontFamily = dragonHunterFont)) },
+            text = { Text("You rolled a ${diceNumber.value}!", style = TextStyle(fontFamily = dragonHunterFont)) }
+        )
+    }
+}
+@Composable
+fun CreatePeopleList(navController: NavController, db: DatabaseManager){
+    Column(
+        modifier = Modifier.fillMaxSize()
+            .background(Color(LocalContext.current.getColor(dark_blue)))
+    ) {
+        Text(
+            "Make a list of people who are playing, then click play!",
+            modifier = Modifier
+                .padding(2.dp)
+                .align(Alignment.CenterHorizontally),
+            color = Color(LocalContext.current.getColor(ofF_white)),
+            style = MaterialTheme.typography.bodyLarge
+        )
+        PeopleListScreen(navController, db)
+    }
+}
+@Composable
+fun PeopleListScreen(navController: NavController, db:DatabaseManager) {
+    CreateList("Dice","Person", db) {
+        list ->
+        peopleList = list
+        navController.navigate("RollDice")
+        size = list.size
+    }
+}
+@Composable
+fun ScoreBoard(players: List<Pair<String, Int>>) {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+            .padding(16.dp)
+            .background(Color(LocalContext.current.getColor(R.color.light_gold)))
+            .border(
+                border = BorderStroke(
+                    2.dp,
+                    Color(LocalContext.current.getColor(brown))
+                ),
+                shape = RoundedCornerShape(16.dp)
+            )
+    ) {
+        Text(
+            text = "Scoreboard",
+            fontSize = 24.sp,
+            modifier = Modifier.padding(6.dp)
+        )
+        players.forEach { (name, score) ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = name, fontSize = 18.sp)
+                Text(text = "Score: $score", fontSize = 18.sp)
+            }
         }
     }
 }
 
-
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun PreviewDiceRoll() {
-    MaterialTheme {
-        DiceRoller()
-    }
+fun PreviewScoreBoard(){
+    ScoreBoard(listOf(Pair("Alice", 0),
+        Pair("Bob", 0),
+        Pair("Charlie", 0)))
 }
-
 //@Preview(showBackground = true)
 //@Composable
-//fun PreviewScoreBoard() {
+//fun PreviewDiceRoll() {
 //    MaterialTheme {
-//        ScoreBoard(Data)
-//    }
-//}
-
-//@Preview(showBackground = true)
-//@Composable
-//fun PreviewDiceCanvas() {
-//    MaterialTheme {
-//        DiceRollerScreen(result = 1, isRolling = false, showDialog = false, onRoll = {})
+//        DiceRoller() { }
 //    }
 //}

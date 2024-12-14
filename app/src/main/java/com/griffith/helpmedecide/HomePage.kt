@@ -8,15 +8,13 @@ package com.griffith.helpmedecide
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.widget.Button
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class HomePage : AppCompatActivity() {
@@ -47,11 +45,8 @@ class HomePage : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main_trial)
-        val introButton : Button = findViewById(R.id.introBtn)
-        introButton.setOnClickListener {
-            ontoHomePage()
-        }
+        ontoHomePage()
+
     }
 
     fun ontoHomePage(){
@@ -65,7 +60,7 @@ class HomePage : AppCompatActivity() {
             val intent = Intent(this, RollTheDice::class.java)
             startActivity(intent)
         }
-        //go to geenerate list activity
+        //go to generate list activity
         ownListBtn.setOnClickListener{
             val intent = Intent(this, GenerateList::class.java)
             startActivity(intent)
@@ -75,18 +70,20 @@ class HomePage : AppCompatActivity() {
             checkLocationPermission() //check permission before moving on :)
         }
 
-        val bottomNavigationView : BottomNavigationView = findViewById(R.id.bottom_navigation_view)
-        bottomNavigationView.setOnClickListener { item ->
-            when (item.id) {
+        val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation_view)
+        bottomNavigationView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
                 R.id.nav_home -> {
                     setContentView(R.layout.activity_home_page)
+                    true
                 }
                 R.id.nav_settings -> {
-                    val intent = Intent(this, SpinTheWheel::class.java)
-                    startActivity(intent)
+                    Log.i("Settings Clicked", "!!")
+                    true
                 }
                 else -> false
             }
         }
+
     }
 }
