@@ -111,13 +111,15 @@ class SpinTheWheel : ComponentActivity() {
 
 @Composable
 fun SpinWheelDraw(segments: List<String>) {
-    var isSpinning by remember { mutableStateOf(false) }
-    var currentRotation by remember { mutableFloatStateOf(0f) }
-    var targetRotation by remember { mutableFloatStateOf(0f) }
-    var selectedItem by remember { mutableStateOf("") }
-    var highlightedItem by remember { mutableStateOf(segments.first()) } // Tracks current item
-    var showDialog by remember { mutableStateOf(false) }
+    //init all variables to complete animation, drawing etc
+    var isSpinning by remember { mutableStateOf(false) } //state of spin or not spinning
+    var currentRotation by remember { mutableFloatStateOf(0f) } //current rotation in deg
+    var targetRotation by remember { mutableFloatStateOf(0f) }//where i want it to rotate to
+    var selectedItem by remember { mutableStateOf("") }//the item the wheel ends up on
+    var highlightedItem by remember { mutableStateOf(segments.first()) } //tracks current item
+    var showDialog by remember { mutableStateOf(false) }//shows an alert dialog
 
+    //animating the rotation of the wheel
     val animatedRotation by animateFloatAsState(
         targetValue = targetRotation,
         animationSpec = tween(
@@ -145,6 +147,7 @@ fun SpinWheelDraw(segments: List<String>) {
             highlightedItem = segments[highlightedIndex]
         }
     }
+
     var center by remember { mutableStateOf(Offset.Zero) }
     Column(
         modifier = Modifier
@@ -161,6 +164,7 @@ fun SpinWheelDraw(segments: List<String>) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        //just some UI
         Text(
             text = "We're choosing...",
             color = Color(LocalContext.current.getColor(R.color.off_white)),
@@ -328,6 +332,7 @@ fun ShowPopupDialog(item: String, onDismiss: () -> Unit) {
         title = { Text(item, textAlign = TextAlign.Center,fontSize = 20.sp, style = TextStyle(fontFamily = dragonHunterFont)) },
         text = { Text("Fate has chosen: $item", style = TextStyle(fontFamily = dragonHunterFont)) },
         confirmButton = {
+            //this button removes the popup dialog
             Row{
                 Button(
                     colors = ButtonDefaults.buttonColors(

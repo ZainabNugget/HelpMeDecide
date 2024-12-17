@@ -180,10 +180,8 @@
         android:layout_height="68dp"
         android:layout_alignParentBottom="true"
         android:background="@color/light_gold"
-        app:itemPaddingTop="20dp"
-        app:itemIconSize="40dp"
         app:itemIconTint="@color/off_white"
-        app:itemTextColor="@android:color/transparent"
-        app:labelVisibilityMode="labeled"
+        app:itemTextColor="@color/off_white"
+        app:labelVisibilityMode="unlabeled"
         app:menu="@menu/bottom_nav_menu" />
 </RelativeLayout>

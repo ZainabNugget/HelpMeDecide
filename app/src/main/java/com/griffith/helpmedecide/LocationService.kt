@@ -63,19 +63,15 @@ class LocationService : AppCompatActivity() {
                     startActivity(intent)
                     true
                 }
-                R.id.nav_settings -> {
-                    Log.i("Settings Clicked", "!!")
-                    true
-                }
                 else -> false
             }
         }
 
-        //init places
+        //init places to use the apis
         if (!Places.isInitialized()) {
             Places.initialize(applicationContext, getString(apiKey))
         }
-
+        //this is needed to use the googles api, also uses context
         placesClient = Places.createClient(this)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
@@ -182,17 +178,17 @@ class LocationService : AppCompatActivity() {
             Place.Field.ADDRESS
         )
 
-        // Create a request for the current place
+        //create a request for the current place
         val request = FindCurrentPlaceRequest.newInstance(placeFields)
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // Handle case where permission is not granted
+            //error checking
             Log.e("Place result", "Location permission not granted")
         }
-        // Call findCurrentPlace
+        //Call findCurrentPlace which is in the API
         val placeResult: Task<FindCurrentPlaceResponse> =
             placesClient.findCurrentPlace(request)
         var name = ""
@@ -203,11 +199,13 @@ class LocationService : AppCompatActivity() {
                     val place = placeLikelihood.place
                     val locationTextView = findViewById<TextView>(R.id.location)
                     locationTextView.text = place.name
+                    //getting location when we havent fetched it yet
                     name = place.name?.toString() ?: "Getting location..."
                     Log.d("Place", "Place name: ${place.name}")
                     break
                 }
             } else {
+                //prints out the actual location of the person
                 name = R.string.location_info.toString()
             }
         }

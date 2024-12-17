@@ -4,7 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-
+//set up the information
 const val DATABASE_NAME = "HMD_DATABASE"
 const val TABLE_NAME = "USER_LISTS"
 const val COLUMN_ID = "id"
@@ -22,6 +22,7 @@ class DatabaseManager(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
                 $TAG TEXT NOT NULL
             )
         """
+        //execute the query
         db?.execSQL(query)
     }
 
@@ -32,8 +33,7 @@ class DatabaseManager(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
 
     fun addList(name : String, items : String, tag : String){
         val db = this.writableDatabase //get the datatbase
-        //put all items as a string seperated by a :
-        //? not sure if it would work
+        //put all items as a string seperated by a : for simplicity
         val values = ContentValues()
         // on below line we are passing all values
         // along with its key and value pair.
@@ -43,6 +43,8 @@ class DatabaseManager(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
         db.insert(TABLE_NAME, null, values)
         db.close() //close after we're done
     }
+
+    //get all lists based on tag : Wheel or RollDice
     fun getAllLists(tag:String): List<Pair<String, String>> {
         val db = readableDatabase
         val cursor = db.query(
@@ -54,6 +56,7 @@ class DatabaseManager(context: Context) : SQLiteOpenHelper(context, DATABASE_NAM
             null,
             null
         )
+        //prep the lists variable
         val lists = mutableListOf<Pair<String, String>>()
         with(cursor) {
             while (moveToNext()) {

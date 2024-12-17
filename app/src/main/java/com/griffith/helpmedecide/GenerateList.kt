@@ -68,8 +68,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.ui.res.colorResource
 
+//set up some colors
 val ofF_white : Int = R.color.off_white
 val brown : Int = R.color.brown
+//set up the main font
 val CustomFontFamily = FontFamily(
     Font(R.font.dragon_hunter)
 )
@@ -80,6 +82,7 @@ class GenerateList : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            //set up the database manager (SQLite)
             val databaseManager = DatabaseManager(this)
             val customTypography = Typography(
                 titleLarge = MaterialTheme.typography.titleLarge.copy(fontFamily = CustomFontFamily),
@@ -88,9 +91,11 @@ class GenerateList : ComponentActivity() {
             val darkBlue = colorResource(id = R.color.dark_blue_custom)
             //Will switch the intent to the spin the wheel activity
             MaterialTheme(typography = customTypography) {
+                //scaffold is best
               Scaffold(
                   modifier = Modifier.fillMaxSize(),
                   topBar = {
+                      //top bar set up
                       TopAppBar(
                           modifier = Modifier.fillMaxWidth(),
                           colors = TopAppBarDefaults.topAppBarColors(
@@ -114,6 +119,7 @@ class GenerateList : ComponentActivity() {
                       )
                   },
                   bottomBar = {
+                      //bottom bar setup
                     BottomAppBar(
                         modifier = Modifier.fillMaxWidth(),
                         containerColor = Color(LocalContext.current.getColor(R.color.light_gold)),
@@ -158,6 +164,7 @@ class GenerateList : ComponentActivity() {
                                     ),
                                 horizontalArrangement = Arrangement.Center
                             ) {
+                                //creating lists with the Wheel tag
                                 CreateList("Wheel","Items",databaseManager) { list ->
                                     val intent = Intent(this@GenerateList, SpinTheWheel::class.java)
                                     intent.putStringArrayListExtra("ITEMS_LIST", ArrayList(list))
@@ -178,6 +185,7 @@ class GenerateList : ComponentActivity() {
                                   ),
                               horizontalArrangement = Arrangement.Center
                           ) {
+                              //show all wheel specific items
                               ShowPreviousLists(db = databaseManager, "Wheel") { list ->
                                   val intent = Intent(this@GenerateList, SpinTheWheel::class.java)
                                   intent.putStringArrayListExtra("ITEMS_LIST", ArrayList(list))
@@ -193,7 +201,13 @@ class GenerateList : ComponentActivity() {
     }
 }
 
-@Composable //Creating list composable, will include text fields
+/*
+* This method is used by the RollTheDice class as well
+* The tag allows this to be multiusage
+* when the list is completed we can specify what it does
+* kind of like when a form is submitted
+* */
+@Composable
 fun CreateList(tag: String, string : String, db : DatabaseManager, onListComplete: (List<String>) -> Unit) {
     var numberOfItems by remember { mutableStateOf("") }//number of items within a list
     var itemsCount by remember { mutableIntStateOf(0) } //how many items
@@ -217,7 +231,7 @@ fun CreateList(tag: String, string : String, db : DatabaseManager, onListComplet
         )
 
         Spacer(modifier = Modifier.height(8.dp))
-
+        //Speciify the amount of things/people
         TextField(
             value = numberOfItems,
             onValueChange = { input ->
@@ -229,7 +243,7 @@ fun CreateList(tag: String, string : String, db : DatabaseManager, onListComplet
                 .fillMaxWidth()
                 .padding(10.dp),
         )
-
+        //counter
         Text(
             text = "Number of $string left to create: $itemsCount",
             color = Color(LocalContext.current.getColor(ofF_white)),
@@ -273,6 +287,7 @@ fun CreateList(tag: String, string : String, db : DatabaseManager, onListComplet
                 modifier = Modifier.padding(20.dp)
             )
         } else if (items.size == itemsCount && itemsCount > 0) {
+            //button will add the list to database and do extra things
             Button(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(LocalContext.current.getColor(R.color.gold)),
@@ -291,7 +306,7 @@ fun CreateList(tag: String, string : String, db : DatabaseManager, onListComplet
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-
+        //so the user knows where they are at
         Text(
             "Current List:",
             modifier = Modifier
@@ -333,6 +348,7 @@ fun CreateList(tag: String, string : String, db : DatabaseManager, onListComplet
 }
 
 fun addToDatabase(tag: String, name : String, list : List<String>, db:DatabaseManager){
+    //add the list with the tag and name of the list
     val stringList = list.joinToString(":")
     Log.i("ListString", stringList)
     db.addList(name, stringList, tag) //add to database :3
@@ -364,8 +380,9 @@ fun ShowPreviousLists(db : DatabaseManager, type : String, onListComplete: (List
             style = MaterialTheme.typography.bodyLarge
         )
         Spacer(modifier = Modifier.height(8.dp))
+        //use for loop to go through database
         db.getAllLists(type).asReversed().forEach { item ->
-
+            //this prints out the lists based on the tag
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -376,6 +393,7 @@ fun ShowPreviousLists(db : DatabaseManager, type : String, onListComplete: (List
                     .padding(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                //show lists
                 Column(
                     modifier = Modifier.weight(1f)
                 )  {
@@ -392,7 +410,7 @@ fun ShowPreviousLists(db : DatabaseManager, type : String, onListComplete: (List
                         color = Color(LocalContext.current.getColor(R.color.off_white))
                     )
                 }
-                //Align to the end (the right)
+                //align to the end (the right)
                 Column(
                     horizontalAlignment = Alignment.End,
                 ) {
@@ -427,6 +445,7 @@ fun ShowPreviousLists(db : DatabaseManager, type : String, onListComplete: (List
 
 }
 
+//Preview for all the components/composables
 //@Preview (showBackground = true)
 //@Composable
 //fun PreviewLists(){

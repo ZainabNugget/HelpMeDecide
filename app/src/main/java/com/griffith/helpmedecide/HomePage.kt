@@ -29,15 +29,17 @@ class HomePage : AppCompatActivity() {
             }
         }
     private fun checkLocationPermission() {
-        //Not gonna use a fine location, a general location is fine
+        //I need to use fine location for using google places API
         if (ContextCompat.checkSelfPermission(
                 this,
                 android.Manifest.permission.ACCESS_COARSE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
+            //go to the location service class
             val intent = Intent(this, LocationService::class.java)
             startActivity(intent)
         } else {
+            //request permission if permission wasn't granted
             requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
         }
     }
@@ -45,13 +47,14 @@ class HomePage : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        //display the homepage
         ontoHomePage()
-
     }
 
     fun ontoHomePage(){
+        //display the xml file
         setContentView(R.layout.activity_home_page)
-        //get all the buttons
+        //get all the buttons from the layout file
         val rollTheDiceBtn : CardView = findViewById(R.id.rollTheDice)
         val ownListBtn : CardView = findViewById(R.id.ownListBtn)
         val locationServiceBtn : CardView = findViewById(R.id.locationServiceBtn)
@@ -69,16 +72,12 @@ class HomePage : AppCompatActivity() {
         locationServiceBtn.setOnClickListener{
             checkLocationPermission() //check permission before moving on :)
         }
-
+        //set up the bottom nav bar
         val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation_view)
         bottomNavigationView.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_home -> {
                     setContentView(R.layout.activity_home_page)
-                    true
-                }
-                R.id.nav_settings -> {
-                    Log.i("Settings Clicked", "!!")
                     true
                 }
                 else -> false

@@ -51,10 +51,10 @@ import androidx.navigation.compose.rememberNavController
 import kotlin.random.Random
 
 private const val SHAKE_THRESHOLD = 15//to avoid excessive shaking
-private const val Cooldown = 200L
-var peopleList : List<String>?= null
-var index = 0
-var size = 0
+private const val Cooldown = 200L //to wait a bit
+var peopleList : List<String>?= null //list of people upon creation
+var index = 0 //index of people in the list
+var size = 0//size of the list
 
 class RollTheDice : ComponentActivity(), SensorEventListener {
     private var sensorManager: SensorManager? = null
@@ -71,11 +71,13 @@ class RollTheDice : ComponentActivity(), SensorEventListener {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        //setup the sensor manager
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
 
         setContent {
+            //setup the database manager
             val db = DatabaseManager(this)
+            //typography using the dragon hunter font
             val customTypography = Typography(
                 titleLarge = MaterialTheme.typography.titleLarge.copy(fontFamily = CustomFontFamily),
                 bodyLarge = MaterialTheme.typography.bodyLarge.copy(fontFamily = CustomFontFamily),
@@ -145,7 +147,7 @@ class RollTheDice : ComponentActivity(), SensorEventListener {
             }
         }
     }
-
+    //what happens when the roll is pressed
     private fun onRoll() {
         if (!isRolling.value) {
             isRolling.value = true
@@ -158,16 +160,16 @@ class RollTheDice : ComponentActivity(), SensorEventListener {
             val x = event.values[0]
             val y = event.values[1]
             val z = event.values[2]
-
+            //setting up the threshold of the shaking
             val currentTime = System.currentTimeMillis()
             if (currentTime - lastUpdatedTime > Cooldown) {
                 val deltaTime = currentTime - lastUpdatedTime
                 val acceleration = Math.abs(x + y + z - last_x - last_y - last_z) / deltaTime * 1000
 
                 if (acceleration > SHAKE_THRESHOLD) {
+                    //debugging
                     Log.i("Shake", "Shake threshold reached!")
                     onRoll()
-
                 }
 
                 lastUpdatedTime = currentTime
@@ -196,6 +198,7 @@ class RollTheDice : ComponentActivity(), SensorEventListener {
 }
 @Composable
 fun NavigationScreen(isRolling: MutableState<Boolean>, diceNumber: MutableState<Int>, db: DatabaseManager, context: Context){
+    //for implicit navigation
     val navController = rememberNavController()
     Surface (
         modifier = Modifier.fillMaxWidth()
@@ -268,7 +271,7 @@ fun DiceRoller(isRolling: MutableState<Boolean>, diceNumber: MutableState<Int>, 
             }
         }
     }
-
+    //animation trigger
     LaunchedEffect(isRolling.value) {
         if (isRolling.value) {
             //Animate the dice roll
@@ -284,6 +287,7 @@ fun DiceRoller(isRolling: MutableState<Boolean>, diceNumber: MutableState<Int>, 
             showDialog.value = true
         }
     }
+    //show alert when the dice stops rolling :)
     if (showDialog.value) {
         AlertDialog(
             onDismissRequest = { showDialog.value = false },
@@ -305,6 +309,7 @@ fun DiceRoller(isRolling: MutableState<Boolean>, diceNumber: MutableState<Int>, 
         )
     }
 }
+
 @Composable
 fun CreatePeopleList(navController: NavController, db: DatabaseManager, context: Context){
     Row (
@@ -413,6 +418,8 @@ fun CreatePeopleList(navController: NavController, db: DatabaseManager, context:
         }
     }
 }
+
+//this uses the create list method from the generate list class
 @Composable
 fun PeopleListScreen(navController: NavController, db:DatabaseManager) {
     Row(
@@ -453,6 +460,7 @@ fun ScoreBoard(players: List<Pair<String, Int>>) {
             fontSize = 24.sp,
             modifier = Modifier.padding(6.dp)
         )
+        //make a scoreboard for each player
         players.forEach { (name, score) ->
             Row(
                 modifier = Modifier
@@ -467,6 +475,7 @@ fun ScoreBoard(players: List<Pair<String, Int>>) {
     }
 }
 
+//preview and debugging
 @Preview
 @Composable
 fun PreviewScoreBoard(){

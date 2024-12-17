@@ -10,6 +10,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        //simple setting content view of the main intro page
         setContentView(R.layout.activity_main_trial)
         val introButton : Button = findViewById(R.id.introBtn)
         introButton.setOnClickListener {
