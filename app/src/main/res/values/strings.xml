@@ -20,4 +20,5 @@
     <string name="location_unavailable">Permission not granted. Please enable location access.</string>
     <string name="places_api_key">AIzaSyCllA4fDKzo_xhNro7R8TsIoMLwb9-wAuo</string>
     <string name="welcome">Help Me Decide</string>
+    <string name="dice_intro">Make a List of people who are playing, then click complete list to play.</string>
 </resources>

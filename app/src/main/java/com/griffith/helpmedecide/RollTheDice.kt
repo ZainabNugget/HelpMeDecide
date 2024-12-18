@@ -216,10 +216,23 @@ fun NavigationScreen(isRolling: MutableState<Boolean>, diceNumber: MutableState<
         }
     }
 }
+
 @Composable
-fun DiceRoller(isRolling: MutableState<Boolean>, diceNumber: MutableState<Int>, navController: NavController) {
-    val rotation = remember { Animatable(0f) }
-    val showDialog = remember { mutableStateOf(false) }
+fun DiceRoller(
+    isRolling: MutableState<Boolean>,
+    diceNumber: MutableState<Int>,
+    navController: NavController
+) {
+    //variables for dice rolling
+    val rotation = remember { Animatable(0f) } //rotation of the dice
+    val showDialog = remember { mutableStateOf(false) } //shows dialog boolean
+    val showWinnerDialog = remember { mutableStateOf(false) } //winner dialog
+    val winner = remember { mutableStateOf<List<Pair<String, Int>>?>(null) } //winner condition
+    val currentPlayerIndex = remember { mutableStateOf(0) } //index of curent player for winning condition
+    val players = remember { //get the list of players
+        peopleList?.map { name -> name to 0 }?.toMutableStateList() ?: mutableStateListOf()
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -227,13 +240,11 @@ fun DiceRoller(isRolling: MutableState<Boolean>, diceNumber: MutableState<Int>, 
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            val players = remember {
-                peopleList?.map { name -> name to 0 }?.let { mutableStateListOf(*it.toTypedArray()) }
-            }
-            Log.i("playerLsit", peopleList.toString())
-            if (players != null) {
+            //if the players list is empty the scoreboard isnt needed
+            if(players.isNotEmpty()){
                 ScoreBoard(players = players)
             }
+            //rolling of the dice
             Box(
                 modifier = Modifier.size(150.dp),
                 contentAlignment = Alignment.Center
@@ -251,9 +262,9 @@ fun DiceRoller(isRolling: MutableState<Boolean>, diceNumber: MutableState<Int>, 
                     color = Color(LocalContext.current.getColor(R.color.dark_blue_custom))
                 )
             }
-
+            //styling
             Spacer(modifier = Modifier.height(20.dp))
-
+            //button to roll the dice if shaking doesn't work
             Button(
                 onClick = {
                     if (!isRolling.value) {
@@ -271,10 +282,11 @@ fun DiceRoller(isRolling: MutableState<Boolean>, diceNumber: MutableState<Int>, 
             }
         }
     }
-    //animation trigger
+
+    //handles the animation
     LaunchedEffect(isRolling.value) {
         if (isRolling.value) {
-            //Animate the dice roll
+            // Animate the dice roll
             rotation.animateTo(
                 targetValue = 720f,
                 animationSpec = tween(
@@ -283,11 +295,34 @@ fun DiceRoller(isRolling: MutableState<Boolean>, diceNumber: MutableState<Int>, 
                 )
             )
             rotation.snapTo(0f)
-            isRolling.value = false // Stop rolling
+
+            //update the scores
+            val roll = diceNumber.value
+            //handles the winning condition
+            if(players.isNotEmpty()) {
+                val currentPlayer = players[currentPlayerIndex.value]
+                players[currentPlayerIndex.value] =
+                    currentPlayer.copy(second = currentPlayer.second + roll)
+
+                //Check if this is the last player
+                if (currentPlayerIndex.value == players.lastIndex) {
+                    //if last player, then see who's the winner!
+                    val maxScore = players.maxOfOrNull { it.second }
+                    winner.value = players.filter { it.second == maxScore }
+
+                    //show the winner dialog
+                    showWinnerDialog.value = true
+                } else {
+                    //move to the next player
+                    currentPlayerIndex.value = (currentPlayerIndex.value + 1) % players.size
+                }
+            }
+            isRolling.value = false //stops rolling
             showDialog.value = true
         }
     }
-    //show alert when the dice stops rolling :)
+
+    //show the dialog when the dice stops rolling
     if (showDialog.value) {
         AlertDialog(
             onDismissRequest = { showDialog.value = false },
@@ -305,11 +340,81 @@ fun DiceRoller(isRolling: MutableState<Boolean>, diceNumber: MutableState<Int>, 
                     Text("OK", style = TextStyle(fontFamily = dragonHunterFont))
                 }
             },
-            text = { Text("You rolled a ${diceNumber.value}!", fontSize = 20.sp, style = TextStyle(fontFamily = dragonHunterFont)) }
+            text = { Text("You rolled ${diceNumber.value}", fontSize = 20.sp, style = TextStyle(fontFamily = dragonHunterFont)) }
+        )
+    }
+
+    //show the winner
+    if (showWinnerDialog.value) {
+        AlertDialog(
+            onDismissRequest = { showWinnerDialog.value = false },
+            containerColor = Color(LocalContext.current.getColor(R.color.gold)),
+            textContentColor = Color(LocalContext.current.getColor(R.color.off_white)),
+            titleContentColor = Color(LocalContext.current.getColor(R.color.off_white)),
+            confirmButton = {
+                Button(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(LocalContext.current.getColor(R.color.dark_blue_custom)),
+                        contentColor = Color(LocalContext.current.getColor(R.color.off_white))
+                    ),
+                    onClick = { showWinnerDialog.value = false }
+                ) {
+                    Text("OK", style = TextStyle(fontFamily = dragonHunterFont))
+                }
+            },
+            text = {
+                Text(
+                    text = if (winner.value?.size == 1) {
+                        "Winner: ${winner.value!!.first().first} with ${winner.value!!.first().second} points!"
+                    } else {
+                        "Winners: ${
+                            winner.value!!.joinToString { "${it.first} (${it.second} points)" }
+                        }"
+                    },
+                    fontSize = 20.sp,
+                    style = TextStyle(fontFamily = dragonHunterFont) //use the font yay
+                )
+            }
         )
     }
 }
 
+@Composable
+fun ScoreBoard(players: List<Pair<String, Int>>) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .background(Color(LocalContext.current.getColor(R.color.light_gold)))
+            .border(
+                border = BorderStroke(
+                    2.dp,
+                    Color(LocalContext.current.getColor(brown))
+                ),
+                shape = RoundedCornerShape(16.dp)
+            )
+    ) {
+        Text(
+            text = "Scoreboard",
+            fontSize = 24.sp,
+            modifier = Modifier.padding(6.dp)
+        )
+        //display the scoreboard based on the players :)
+        players.forEach { (name, score) ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = name, fontSize = 18.sp)
+                Text(text = "Score: $score", fontSize = 18.sp)
+            }
+        }
+    }
+}
+
+//this method creates the people's list
 @Composable
 fun CreatePeopleList(navController: NavController, db: DatabaseManager, context: Context){
     Row (
@@ -322,8 +427,9 @@ fun CreatePeopleList(navController: NavController, db: DatabaseManager, context:
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
+            //telling the user what to do
             Text(
-                "Make a list of people who are playing, then click play!",
+                "Make a List of people who are playing, then click complete list to play.",
                 modifier = Modifier
                     .padding(2.dp),
                 textAlign = TextAlign.Center,
@@ -346,6 +452,7 @@ fun CreatePeopleList(navController: NavController, db: DatabaseManager, context:
                     ),
                 verticalArrangement = Arrangement.Center
             ){
+                //added an option to just go use the dice
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
@@ -396,6 +503,7 @@ fun CreatePeopleList(navController: NavController, db: DatabaseManager, context:
                     ),
                 verticalArrangement = Arrangement.Center
             ){
+                //If user has made lists before, show them so the user can go there
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -438,39 +546,6 @@ fun PeopleListScreen(navController: NavController, db:DatabaseManager) {
             peopleList = list
             navController.navigate("RollDice")
             size = list.size
-        }
-    }
-}
-@Composable
-fun ScoreBoard(players: List<Pair<String, Int>>) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
-            .padding(16.dp)
-            .background(Color(LocalContext.current.getColor(R.color.light_gold)))
-            .border(
-                border = BorderStroke(
-                    2.dp,
-                    Color(LocalContext.current.getColor(brown))
-                ),
-                shape = RoundedCornerShape(16.dp)
-            )
-    ) {
-        Text(
-            text = "Scoreboard",
-            fontSize = 24.sp,
-            modifier = Modifier.padding(6.dp)
-        )
-        //make a scoreboard for each player
-        players.forEach { (name, score) ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(text = name, fontSize = 18.sp)
-                Text(text = "Score: $score", fontSize = 18.sp)
-            }
         }
     }
 }
