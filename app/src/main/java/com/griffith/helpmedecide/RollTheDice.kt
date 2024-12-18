@@ -35,6 +35,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -53,7 +55,7 @@ import kotlin.random.Random
 private const val SHAKE_THRESHOLD = 15//to avoid excessive shaking
 private const val Cooldown = 200L //to wait a bit
 var peopleList : List<String>?= null //list of people upon creation
-var index = 0 //index of people in the list
+//var index = 0 //index of people in the list
 var size = 0//size of the list
 
 class RollTheDice : ComponentActivity(), SensorEventListener {
@@ -65,8 +67,8 @@ class RollTheDice : ComponentActivity(), SensorEventListener {
     private var last_z = 0f
     //to calculate time difference
     var lastUpdatedTime : Long = 0
-    var timeDifference : Long = 0
-    var numberOfPeople = 0
+//    var timeDifference : Long = 0
+//    var numberOfPeople = 0
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -232,19 +234,41 @@ fun DiceRoller(
     val players = remember { //get the list of players
         peopleList?.map { name -> name to 0 }?.toMutableStateList() ?: mutableStateListOf()
     }
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(LocalContext.current.getColor(R.color.dark_blue_custom))),
+            .background(Color(context.getColor(R.color.dark_blue_custom))),
         contentAlignment = Alignment.Center
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            //if the players list is empty the scoreboard isnt needed
-            if(players.isNotEmpty()){
+        //text to prompt phone shake if its not rolling already
+        if (!isRolling.value) {
+            Text(
+                text = "Shake your phone & roll the dice!",
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 16.dp),
+                color = Color(context.getColor(R.color.off_white)),
+                style = TextStyle(fontSize = 16.sp, fontFamily = dragonHunterFont)
+            )
+        }
+        //players list is empty then no need for scoreboard
+        if (players.isNotEmpty()) {
+            Column(
+                modifier = Modifier
+                    .height(200.dp)//height of the scoreboard
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+                    .padding(top = 20.dp)
+            ) {
                 ScoreBoard(players = players)
             }
-            //rolling of the dice
+        }
+
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+            //rolls the dice
             Box(
                 modifier = Modifier.size(150.dp),
                 contentAlignment = Alignment.Center
@@ -259,11 +283,13 @@ fun DiceRoller(
                 Text(
                     text = if (isRolling.value) "..." else diceNumber.value.toString(),
                     modifier = Modifier.align(Alignment.Center),
-                    color = Color(LocalContext.current.getColor(R.color.dark_blue_custom))
+                    color = Color(context.getColor(R.color.dark_blue_custom))
                 )
             }
+
             //styling
             Spacer(modifier = Modifier.height(20.dp))
+
             //button to roll the dice if shaking doesn't work
             Button(
                 onClick = {
@@ -274,8 +300,8 @@ fun DiceRoller(
                 },
                 enabled = !isRolling.value,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(LocalContext.current.getColor(R.color.gold)),
-                    contentColor = Color(LocalContext.current.getColor(R.color.off_white))
+                    containerColor = Color(context.getColor(R.color.gold)),
+                    contentColor = Color(context.getColor(R.color.off_white))
                 )
             ) {
                 Text("Roll Dice")
@@ -283,7 +309,7 @@ fun DiceRoller(
         }
     }
 
-    //handles the animation
+    //handle the animation
     LaunchedEffect(isRolling.value) {
         if (isRolling.value) {
             // Animate the dice roll
@@ -298,13 +324,13 @@ fun DiceRoller(
 
             //update the scores
             val roll = diceNumber.value
-            //handles the winning condition
-            if(players.isNotEmpty()) {
+            //handles winning condition
+            if (players.isNotEmpty()) {
                 val currentPlayer = players[currentPlayerIndex.value]
                 players[currentPlayerIndex.value] =
                     currentPlayer.copy(second = currentPlayer.second + roll)
 
-                //Check if this is the last player
+                //check if this is the last player
                 if (currentPlayerIndex.value == players.lastIndex) {
                     //if last player, then see who's the winner!
                     val maxScore = players.maxOfOrNull { it.second }
@@ -326,14 +352,14 @@ fun DiceRoller(
     if (showDialog.value) {
         AlertDialog(
             onDismissRequest = { showDialog.value = false },
-            containerColor = Color(LocalContext.current.getColor(R.color.gold)),
-            textContentColor = Color(LocalContext.current.getColor(R.color.off_white)),
-            titleContentColor = Color(LocalContext.current.getColor(R.color.off_white)),
+            containerColor = Color(context.getColor(R.color.gold)),
+            textContentColor = Color(context.getColor(R.color.off_white)),
+            titleContentColor = Color(context.getColor(R.color.off_white)),
             confirmButton = {
                 Button(
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(LocalContext.current.getColor(R.color.dark_blue_custom)),
-                        contentColor = Color(LocalContext.current.getColor(R.color.off_white))
+                        containerColor = Color(context.getColor(R.color.dark_blue_custom)),
+                        contentColor = Color(context.getColor(R.color.off_white))
                     ),
                     onClick = { showDialog.value = false }
                 ) {
@@ -348,14 +374,14 @@ fun DiceRoller(
     if (showWinnerDialog.value) {
         AlertDialog(
             onDismissRequest = { showWinnerDialog.value = false },
-            containerColor = Color(LocalContext.current.getColor(R.color.gold)),
-            textContentColor = Color(LocalContext.current.getColor(R.color.off_white)),
-            titleContentColor = Color(LocalContext.current.getColor(R.color.off_white)),
+            containerColor = Color(context.getColor(R.color.gold)),
+            textContentColor = Color(context.getColor(R.color.off_white)),
+            titleContentColor = Color(context.getColor(R.color.off_white)),
             confirmButton = {
                 Button(
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(LocalContext.current.getColor(R.color.dark_blue_custom)),
-                        contentColor = Color(LocalContext.current.getColor(R.color.off_white))
+                        containerColor = Color(context.getColor(R.color.dark_blue_custom)),
+                        contentColor = Color(context.getColor(R.color.off_white))
                     ),
                     onClick = { showWinnerDialog.value = false }
                 ) {
@@ -372,18 +398,20 @@ fun DiceRoller(
                         }"
                     },
                     fontSize = 20.sp,
-                    style = TextStyle(fontFamily = dragonHunterFont) //use the font yay
+                    style = TextStyle(fontFamily = dragonHunterFont)
                 )
             }
         )
     }
 }
 
+
 @Composable
 fun ScoreBoard(players: List<Pair<String, Int>>) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .size(200.dp)
             .padding(16.dp)
             .background(Color(LocalContext.current.getColor(R.color.light_gold)))
             .border(
@@ -399,16 +427,20 @@ fun ScoreBoard(players: List<Pair<String, Int>>) {
             fontSize = 24.sp,
             modifier = Modifier.padding(6.dp)
         )
-        //display the scoreboard based on the players :)
-        players.forEach { (name, score) ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(text = name, fontSize = 18.sp)
-                Text(text = "Score: $score", fontSize = 18.sp)
+        Column(
+            modifier = Modifier.verticalScroll(rememberScrollState())
+        ) {
+            //display the scoreboard based on the players :)
+            players.forEach { (name, score) ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(text = name, fontSize = 18.sp)
+                    Text(text = "Score: $score", fontSize = 18.sp)
+                }
             }
         }
     }

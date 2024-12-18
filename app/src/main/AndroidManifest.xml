@@ -43,7 +43,8 @@
             android:theme="@style/Theme.HelpMeDecide" />
         <activity
             android:name=".RollTheDice"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".SpinTheWheel"
             android:exported="false"

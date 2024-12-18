@@ -1,5 +1,9 @@
 package com.griffith.helpmedecide
-
+/*
+* Name: Zainab Wadullah
+* BSCH - Stage 4 MD
+* Student Number: 3088942
+* */
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase

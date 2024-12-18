@@ -13,6 +13,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.compose.runtime.mutableStateOf
@@ -66,7 +67,7 @@ class LocationService : AppCompatActivity() {
                 else -> false
             }
         }
-
+        var locationFound = mutableStateOf(false)
         //init places to use the apis
         if (!Places.isInitialized()) {
             Places.initialize(applicationContext, getString(apiKey))
@@ -89,6 +90,7 @@ class LocationService : AppCompatActivity() {
                 .addOnSuccessListener { location ->
                     if (location != null) {
                         Log.i("Current Location", "$location")
+                        locationFound.value = true
                         val center = LatLng(location.latitude, location.longitude)
                         val search_radius = CircularBounds.newInstance(center, 1000.0)
                         getNearbyRestaurants(location.latitude, location.longitude, restaurantList, listOf("restaurant"))
@@ -105,24 +107,34 @@ class LocationService : AppCompatActivity() {
         } else { //If we don't have permission to access location!
             locationTextView.setText(R.string.location_unavailable)
         }
-
+        //error fix: wait until location is fetched before taking the user to the activity
         val restaurantBtn : Button = findViewById(R.id.restaurantBtn)
         restaurantBtn.setOnClickListener {
-            val intent = Intent(this, SpinTheWheel::class.java)
-            intent.putStringArrayListExtra("ITEMS_LIST", ArrayList(restaurantList))
-            intent.putExtra("USER_GENERATED", true)
-            startActivity(intent)
+            if(locationFound.value){ //if found yay
+                if(restaurantList.isNotEmpty()){
+                    val intent = Intent(this, SpinTheWheel::class.java)
+                    intent.putStringArrayListExtra("ITEMS_LIST", ArrayList(restaurantList))
+                    intent.putExtra("USER_GENERATED", true)
+                    startActivity(intent)
+                }
+            } else {
+                Toast.makeText(this, "Please wait while we fetch your location...", Toast.LENGTH_SHORT).show()
+            }
         }
 
         val tourismBtn : Button = findViewById(R.id.tourismBtn)
         tourismBtn.setOnClickListener {
-            if(tourismList.isNotEmpty()){
-                val intent = Intent(this, SpinTheWheel::class.java)
-                intent.putStringArrayListExtra("ITEMS_LIST", ArrayList(tourismList))
-                intent.putExtra("USER_GENERATED", true)
-                startActivity(intent)
-            } else {
+            if(locationFound.value) { //if found yay
+                if (tourismList.isNotEmpty()) {
+                    val intent = Intent(this, SpinTheWheel::class.java)
+                    intent.putStringArrayListExtra("ITEMS_LIST", ArrayList(tourismList))
+                    intent.putExtra("USER_GENERATED", true)
+                    startActivity(intent)
+                } else {
 
+                }
+            } else {
+                Toast.makeText(this, "Please wait while we fetch your location...", Toast.LENGTH_SHORT).show()
             }
         }
 
